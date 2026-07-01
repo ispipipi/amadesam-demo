@@ -1813,6 +1813,7 @@ document.addEventListener("click",e=>{
   const ln=e.target.closest("[data-l-nav]");if(ln){e.preventDefault();lState.current=ln.dataset.lNav;lSave();renderLanchas();return}
   const lf=e.target.closest("[data-l-filter]");if(lf){e.preventDefault();const f=lf.dataset.lFilter;lState.current=f==="completed"?"records":"services";lState.filters.day=f==="today"?"today":f==="tomorrow"?"tomorrow":"all";lState.filters.status=f==="pending"?"pending":f==="completed"||f==="albaranes"?"completed":f==="active"?"progress":"all";lSave();renderLanchas();return}
   const lb=e.target.closest("[data-l-board]");if(lb&&!e.target.closest("button")){e.preventDefault();lBoardDetail(lb.dataset.lBoard);return}
+  const lpz=e.target.closest("tr[data-pz-id]");if(lpz&&!e.target.closest("input")&&!e.target.closest("select")&&!e.target.closest("[contenteditable]")){e.preventDefault();lServiceDetail(lpz.dataset.pzId);return}
   const lsvc=e.target.closest("[data-l-id]");if(lsvc&&!e.target.closest("button")){e.preventDefault();lServiceDetail(lsvc.dataset.lId);return}
   const ls=e.target.closest("[data-l-service]");if(ls&&!e.target.closest("button")){e.preventDefault();lServiceDetail(ls.dataset.lService);return}
   const la=e.target.closest("[data-l-action]");if(la){e.preventDefault();e.stopPropagation();lHandle(la.dataset.lAction,la);return}
@@ -1829,13 +1830,7 @@ document.addEventListener("change",e=>{
   document.querySelectorAll(".pz-select[data-pz-field],.pz-date[data-pz-field],.pz-time[data-pz-field]").forEach(el=>{
     el.addEventListener("change",()=>lSavePizarraCell(el.dataset.pzId,el.dataset.pzField,el.value));
   });
-  // L2 — pizarra row click opens service detail
-  document.querySelectorAll("tr[data-pz-id]").forEach(row=>{
-    row.addEventListener("click",function(e){
-      if(e.target.closest("input")||e.target.closest("select")||e.target.closest("[contenteditable]"))return;
-      lServiceDetail(row.dataset.pzId);
-    });
-  });
+  // L2 — pizarra row click: delegated on lanchasView container (always in DOM)
   lSave();renderLanchas();
 });
 /* Lanchas final workflow overrides: 14-day calendar, records filters, WhatsApp, OCR/audio and billing-ready fields. */
