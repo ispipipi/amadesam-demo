@@ -1197,6 +1197,9 @@ function lSeed(){
     {id:"lan-3",jobNo:"LN-2026-103",vessel:"CMA CGM TIGRIS",agent:"MH Blanc",type:"Technician transfer",date:lIso(0),time:"15:00",duration:3,launch:"AMADESAM ONCE",patron:"Manuel Herrera",pallets:2,pax:6,origin:"Crinavis",destination:"Fondeo A",status:"pending",notes:"Tecnicos suben con herramientas.",log:["Solicitud recibida"]},
     {id:"lan-4",jobNo:"LN-2026-104",vessel:"HAPAG-LLOYD FRANKFURT",agent:"Berge Maritimo",type:"Crew launch",date:lIso(1),time:"08:30",duration:2,launch:"AMADESAM CINCO",patron:"Jose Gonzalez",pallets:0,pax:10,origin:"Muelle Norte",destination:"Fondeo C",status:"pending",notes:"Servicio programado manana.",log:["Solicitud recibida"]},
     {id:"lan-5",jobNo:"LN-2026-105",vessel:"EVER ACE",agent:"Agunsa",type:"Stores / spares",date:lIso(1),time:"13:00",duration:2,launch:"AMADESAM 12",patron:"Antonio Vidal",pallets:22,pax:3,origin:"Muelle Isla Verde",destination:"APM Terminal",status:"pending",notes:"Carga seca y personal tecnico.",log:["Solicitud recibida"]},
+    {id:"lan-alert-1",jobNo:"LN-2026-106",vessel:"NORDIC JADE",agent:"HCR",type:"Crew launch",date:lIso(0),time:new Date(new Date().getTime()+3*3600000).toTimeString().slice(0,5),duration:2,launch:"AMADESAM CINCO",patron:"Jose Gonzalez",pallets:1,pax:4,origin:"Muelle Norte",destination:"Fondeo A",status:"assigned",notes:"ETA en menos de 3h - patron pendiente de aviso.",patronNotified:false,log:["Solicitud recibida","Asignado a AMADESAM CINCO"]},
+    {id:"lan-alert-2",jobNo:"LN-2026-107",vessel:"MSC TRIESTE",agent:"Alphaship",type:"Stores / spares",date:lIso(0),time:"16:00",duration:2,launch:"AMADESAM CINCO",patron:"Jose Gonzalez",pallets:8,pax:2,origin:"Muelle Sur",destination:"Fondeo B",status:"pending",notes:"Carga paletizada pesada — solicita 8 pallets.",log:["Solicitud recibida"]},
+    {id:"lan-alert-3",jobNo:"LN-2026-108",vessel:"ATLANTIC STAR",agent:"Berge Maritimo",type:"Crew launch",date:lIso(1),time:"07:00",duration:3,launch:"AMADESAM CINCO",patron:"Jose Gonzalez",pallets:0,pax:18,origin:"Crinavis",destination:"Fondeo C",status:"pending",notes:"Relevo masivo de tripulacion — 18 personas.",log:["Solicitud recibida"]},
     {id:"lan-6",jobNo:"LN-2026-098",vessel:"AIDA BELLA",agent:"MH Blanc",type:"Crew launch",date:lIso(-1),time:"10:00",duration:2,launch:"PUNTA TORRELLA",patron:"Antonio Vidal",pallets:1,pax:11,origin:"Muelle Norte",destination:"Cruceros",status:"completed",invoice:true,albaran:{uploaded:true,signedBy:"Chief Officer",hours:"2.0",ocrText:"ALBARAN AIDA BELLA - 2.0 hrs - signed Chief Officer"},notes:"Completado sin incidencias.",log:["Despacho enviado","Servicio completado","Albaran OCR cargado"]},
     {id:"lan-7",jobNo:"LN-2026-099",vessel:"MSC BENEDETTA",agent:"Berge Maritimo",type:"Technician transfer",date:lIso(-2),time:"16:30",duration:2,launch:"AMADESAM OCHO",patron:"Manuel Herrera",pallets:5,pax:4,origin:"Muelle Norte",destination:"Fondeo B",status:"completed",invoice:false,albaran:{uploaded:true,signedBy:"Master",hours:"2.5",ocrText:"ALBARAN MSC BENEDETTA - 2.5 hrs - signed Master"},notes:"Pendiente revision de factura.",log:["Servicio completado","Albaran recibido"]},
     {id:"lan-8",jobNo:"LN-2026-100",vessel:"MAERSK ALTAIR",agent:"Alphaship",type:"Stores / spares",date:lIso(0),time:"12:45",duration:1.5,launch:"AMADESAM OCHO",patron:"Antonio Vidal",pallets:4,pax:1,origin:"Muelle Norte",destination:"Terminal TTI",status:"cancelled",cancelReason:"Buque cambio ventana de escala.",notes:"Cancelado por agente.",log:["Solicitud recibida","Cancelado por cambio de ETA"],port:"algeciras"},
@@ -1819,14 +1822,24 @@ function lDashboard(){
     pending=rows.filter(s=>s.status==="pending").length,
     active=rows.filter(s=>["assigned","progress"].includes(s.status)).length,
     alb=rows.filter(s=>s.status==="completed"&&!s.albaran?.uploaded).length;
-  return`<div class="panel" style="margin-bottom:14px">
-    <div class="section">
-      <div><h3>Resumen operativo</h3><p>Todo baja al expediente del buque: datos, flota, OCR, albaran y factura.</p></div>
+  return`<div class="grid two">
+    <div class="panel vessel-port-panel">
+      <div class="section">
+        <div><h3>VesselFinder · Puerto de ${h(p.label)}</h3><p>Vista AIS practica para ubicar fondeos, terminales, muelles y ventanas de lancha.</p></div>
+        <span class="badge progress">${h(p.locode)}</span>
+      </div>
+      ${lPortMap()}
+      <div class="toolbar">${p.areas.map(a=>`<span class="pill">${h(a)}</span>`).join("")}</div>
     </div>
-    <div class="grid two" style="margin-bottom:14px">${lMetric("Hoy",today.length,"Servicios programados","today")}${lMetric("Pendientes",pending,"Por confirmar","pending")}${lMetric("En curso",active,"Asignados / servicio","active")}${lMetric("Albaranes",alb,"Pendientes dentro del expediente","albaranes")}</div>
-    <div>${lAlertsHtml()}</div>
+    <div class="panel">
+      <div class="section">
+        <div><h3>Resumen operativo</h3><p>Servicios, alertas y accesos rapidos.</p></div>
+      </div>
+      <div class="grid two">${lMetric("Hoy",today.length,"Servicios programados","today")}${lMetric("Pendientes",pending,"Por confirmar","pending")}${lMetric("En curso",active,"Asignados / servicio","active")}${lMetric("Albaranes",alb,"Pendientes dentro del expediente","albaranes")}</div>
+      <div style="margin-top:14px">${lAlertsHtml()}</div>
+    </div>
   </div>
-  <div class="panel">
+  <div class="panel" style="margin-top:14px">
     <div class="section">
       <div><h3>Servicios de ${h(p.label)}</h3><p>Lista operativa. Click en el barco para abrir el expediente completo.</p></div>
       <button class="btn" data-l-nav="pizarras">Ver todos</button>
