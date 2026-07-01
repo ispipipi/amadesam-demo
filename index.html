@@ -1449,7 +1449,112 @@ function lServiceTable(rows){
   if(!rows.length)return'<div class="empty">No hay servicios para mostrar.</div>';
   return`<table><thead><tr><th>Job</th><th>Buque</th><th>Agente</th><th>Fecha</th><th>Lancha</th><th>Carga</th><th>Estado</th><th>Accion</th></tr></thead><tbody>${rows.map(s=>`<tr class="clickable service-row-${s.status}" data-l-service="${s.id}"><td class="mono">${h(s.jobNo)}</td><td><strong>${h(s.vessel)}</strong><br><span class="muted">${h(s.type)}</span></td><td>${h(s.agent)}</td><td class="mono">${h(lTimeLabel(s.date,s.time))}</td><td>${h(s.launch)}<br><span class="muted">${h(s.patron)}</span></td><td>${s.pallets} pallets · ${s.pax} pax</td><td>${lBadge(s.status)}</td><td><button class="btn" data-l-action="service-detail" data-id="${s.id}">Abrir</button></td></tr>`).join("")}</tbody></table>`;
 }
-function lFleetView(){return`<div class="panel"><div class="section"><div><h3>Panel de flota</h3><p>Capacidad dura para validacion de servicios y conflictos.</p></div><button class="btn primary" data-l-action="new-service">Nuevo servicio</button></div><div class="grid two">${lState.fleet.map(f=>`<div>${lFleetCard(f)}<div style="margin-top:10px">${lServiceTable(lState.services.filter(s=>s.launch===f.name&&["pending","assigned","progress"].includes(s.status)))}</div></div>`).join("")}</div></div>`}
+function lFleetView(){
+  lNormalize();
+  var p=lState.port||"algeciras";
+  var fleet=lState.fleet.filter(function(f){return p==="all"||(f.port||"algeciras")===p;});
+
+  function statusColor(st){
+    if(!st||st==="Disponible")return"#10b981";
+    if(st==="En turno")return"#f59e0b";
+    if(/[Mm]anten/.test(st))return"#ef4444";
+    return"#6b7280";
+  }
+  function statusBg(st){
+    if(!st||st==="Disponible")return"#e7f8f1";
+    if(st==="En turno")return"#fff7e8";
+    if(/[Mm]anten/.test(st))return"#fff1f1";
+    return"#f3f4f6";
+  }
+
+  var cards=fleet.map(function(f){
+    var active=lState.services.filter(function(s){return s.launch===f.name&&["pending","assigned","progress"].includes(s.status);});
+    var upcoming=lState.services.filter(function(s){return s.launch===f.name&&["pending","assigned"].includes(s.status);});
+    var palletPct=Math.min(100,Math.round(active.length*18));
+    var paxPct=Math.min(100,Math.round(active.length*15));
+    var sColor=statusColor(f.status);
+    var sBg=statusBg(f.status);
+
+    return "<div class='card' style='margin-bottom:12px;cursor:pointer;border:2px solid transparent;transition:border .15s' "
+      +"onmouseover='this.style.borderColor=\"var(--sea)\"' onmouseout='this.style.borderColor=\"transparent\"' "
+      +"onclick='lOpenFleetDrawer(\""+agH(f.name)+"\")' >"
+      +"<div style='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px'>"
+      +"<div>"
+      +"<h3 style='margin:0 0 3px;font-size:17px'>"+h(f.name)+"</h3>"
+      +"<p style='margin:0;font-size:12px;color:var(--muted)'>Patron base: <strong>"+h(f.patron)+"</strong> \u00B7 "+h(f.base)+"</p>"
+      +"</div>"
+      +"<span style='background:"+sBg+";color:"+sColor+";border-radius:20px;padding:3px 12px;font-size:11px;font-weight:900'>"+h(f.status||"Disponible")+"</span>"
+      +"</div>"
+      +"<div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px'>"
+      +"<div style='background:#f4f8fa;border-radius:8px;padding:10px;text-align:center'>"
+      +"<p style='margin:0;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em'>Pallets</p>"
+      +"<strong style='font-size:22px;color:var(--navy)'>"+f.pallets+"</strong>"
+      +"</div>"
+      +"<div style='background:#f4f8fa;border-radius:8px;padding:10px;text-align:center'>"
+      +"<p style='margin:0;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em'>Pasajeros</p>"
+      +"<strong style='font-size:22px;color:var(--navy)'>"+f.pax+"</strong>"
+      +"</div>"
+      +"<div style='background:#f4f8fa;border-radius:8px;padding:10px;text-align:center'>"
+      +"<p style='margin:0;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em'>Asignaciones</p>"
+      +"<strong style='font-size:22px;color:"+(active.length?"#f59e0b":"#10b981")+";'>"+active.length+"</strong>"
+      +"</div>"
+      +"</div>"
+      +"<div style='display:flex;gap:6px;flex-wrap:wrap'>"
+      +(upcoming.slice(0,3).map(function(s){
+        return "<span style='background:#e8f4fd;color:#087ea4;border-radius:5px;padding:3px 9px;font-size:11px'>"
+          +"\u26F3 "+h(s.vessel)+" \u00B7 "+h(s.date.slice(5))+" "+h(s.time)+"</span>";
+      }).join(""))
+      +(upcoming.length>3?"<span style='font-size:11px;color:var(--muted);padding:3px 6px'>+"+( upcoming.length-3)+" m\u00E1s</span>":"")
+      +(!upcoming.length?"<span style='font-size:11px;color:#10b981'>\u2714 Sin servicios pendientes</span>":"")
+      +"</div>"
+      +"<p style='margin:8px 0 0;font-size:11px;color:var(--muted)'>Clic para ver asignaciones completas</p>"
+      +"</div>";
+  }).join("");
+
+  return "<div class='panel'>"
+    +"<div class='section'><div><h3>Panel de flota</h3><p>"+fleet.length+" lanchas \u00B7 Clic en una para ver sus asignaciones.</p></div>"
+    +"<button class='btn primary' data-l-action='new-service'>+ Nuevo servicio</button>"
+    +"</div>"
+    +"<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;margin-top:4px'>"
+    +cards+"</div></div>";
+}
+
+function lOpenFleetDrawer(name){
+  var f=lState.fleet.find(function(x){return x.name===name;});
+  if(!f)return;
+  var services=lState.services.filter(function(s){return s.launch===name;})
+    .sort(function(a,b){return (a.date+a.time).localeCompare(b.date+b.time);});
+  var active=services.filter(function(s){return ["pending","assigned","progress"].includes(s.status);});
+  var past=services.filter(function(s){return ["completed","cancelled"].includes(s.status);});
+
+  function svcRow(s){
+    return "<div style='display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer' "
+      +"data-l-service='"+agH(s.id)+"'>"
+      +"<div><strong style='font-size:13px'>"+h(s.vessel)+"</strong>"
+      +" <span style='font-size:11px;color:var(--muted)'>"+h(s.agent)+"</span>"
+      +"<p style='margin:2px 0 0;font-size:11px;color:var(--muted)'>"+lServiceTypeLabel(s.type)+" \u00B7 "+h(s.date)+" "+h(s.time)+" \u00B7 "+h(s.patron)+"</p>"
+      +"</div>"
+      +"<span class='badge l-status-"+agH(s.status)+"'>"+lStatusLabel(s.status)+"</span>"
+      +"</div>";
+  }
+
+  var html2="<div class='section'><div><h3>"+agH(f.name)+"</h3>"
+    +"<p style='font-size:12px;color:var(--muted)'>Patron: <strong>"+agH(f.patron)+"</strong> \u00B7 "+agH(f.base)+"</p></div>"
+    +"<button class='btn' onclick='closeAll()'>X</button></div>"
+    +"<div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 0'>"
+    +"<div style='background:#f4f8fa;border-radius:8px;padding:10px;text-align:center'><p style='margin:0;font-size:10px;color:var(--muted)'>PALLETS</p><strong style='font-size:20px'>"+f.pallets+"</strong></div>"
+    +"<div style='background:#f4f8fa;border-radius:8px;padding:10px;text-align:center'><p style='margin:0;font-size:10px;color:var(--muted)'>PASAJEROS</p><strong style='font-size:20px'>"+f.pax+"</strong></div>"
+    +"<div style='background:#f4f8fa;border-radius:8px;padding:10px;text-align:center'><p style='margin:0;font-size:10px;color:var(--muted)'>ESTADO</p><strong style='font-size:13px'>"+agH(f.status||"Disponible")+"</strong></div>"
+    +"</div>"
+    +(active.length
+      ?"<h4 style='margin:16px 0 4px;font-size:13px;color:var(--sea)'>Asignaciones activas y pendientes ("+active.length+")</h4>"+active.map(svcRow).join("")
+      :"<p style='color:#10b981;font-size:13px;margin:16px 0'>\u2714 Sin asignaciones activas</p>")
+    +(past.length
+      ?"<h4 style='margin:16px 0 4px;font-size:13px;color:var(--muted)'>Historial reciente ("+past.length+")</h4>"+past.slice(-5).reverse().map(svcRow).join("")
+      :"");
+
+  openDrawer(html2);
+}
 function lCalendarEvents(status="all"){return lState.services.filter(s=>status==="all"||s.status===status).map(s=>({...s,calStatus:s.status})).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))}
 function lCalColor(st){return{pending:"#f59e0b",assigned:"#087ea4",progress:"#7c3aed",completed:"#10b981",cancelled:"#9ca3af"}[st]||"#087ea4"}
 function lCalendarDay(d,events){
