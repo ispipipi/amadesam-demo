@@ -1372,7 +1372,7 @@ function lPizarrasView(){
       +"<option "+(/CARGANDO/i.test(s.account||"")?"selected":"")+"'>CARGANDO EN MUELLE</option>"
       +"</select>";
     return "<tr class='"+tone+"' data-pz-id='"+h(s.id)+"' style='cursor:pointer'>"
-      +"<td><div class='pizarra-cell' contenteditable='true' data-pz-field='service' data-pz-id='"+h(s.id)+"'>"+h(s.jobNo)+"</div></td>"
+      +"<td style='cursor:pointer' data-pz-id='"+h(s.id)+"'><div style='font-weight:900;color:var(--sea);text-decoration:underline;font-size:11px'>"+h(s.jobNo)+"</div><div style='font-size:10px;color:var(--muted)'>Ver expediente</div></td>"
       +"<td>"+typeSel+"</td>"
       +"<td>"+launchSel+"</td>"
       +"<td><div class='pizarra-cell' contenteditable='true' data-pz-field='vessel' data-pz-id='"+h(s.id)+"'>"+h(s.vessel)+"</div></td>"
