@@ -36,7 +36,7 @@ const services=["Hull inspection","Hull cleaning","Propeller polishing","Class s
 const examples=[{id:"q1",type:"quote",title:"Cotizacion · Pavilion",summary:"Limpieza + pulido durante bunkering.",body:"Dear AMADESAM,\\nPlease quote underwater hull cleaning and propeller polishing for MV Pavilion. ETA Algeciras 23 May 2025 at anchorage. Client CMA CGM. Clean equipment requested during bunkering."},{id:"q2",type:"quote",title:"Cotizacion · Milan",summary:"Inspeccion de clase con surveyor.",body:"Good morning,\\nKindly send your quotation for underwater hull inspection and class survey support for MV Milan, IMO 9345678. ETA Algeciras 28 May 2025, APM Terminal. Client Global UWS. Surveyor attendance required."},{id:"a1",type:"availability",title:"Disponibilidad · Yenisei",summary:"Consulta si hay equipo para ventana ETA.",body:"Dear AMADESAM Ops,\\nPlease confirm availability of diving team for MV Yenisei on 24 May 2025 around 11:00 LT at TTI Algeciras. Scope may include hull cleaning and sea chest inspection. Client MERS. Please advise earliest available slot."},{id:"a2",type:"availability",title:"Disponibilidad urgente · Newport",summary:"Ventana corta, servicio hoy.",body:"Hello,\\nCan you confirm immediate availability today for MV Newport at Algeciras anchorage? ETA 19 May 2025 07:40. We need divers ready for propeller polishing after bunkering. Agent Alfa Ship. Please confirm team availability before we request formal quote."}];
 const groups=[["Vista general",[["dashboard","Dashboard","DB"]]],["Cotizaciones",[["quote-new","Nueva Cotizacion","NQ"],["followup","Seguimiento","SG"]]],["Confirmaciones",[["confirmed","Servicios Confirmados","SC"],["prearrival","Documentacion Pre-Arribo","PA"]]],["Permisos",[["permits-form","Solicitudes Pendientes","RP"],["permits-status","Estado Permisos","EP"]]],["Operaciones",[["quotes","Expedientes","EX"],["ops-calendar","Calendario","CW"],["pizarra-semana","Pizarra","PZ"],["active","Servicios Activos","SA"]]],["Reportes",[["worksheets","Worksheets","WS"],["final-reports","Reportes Finales","RF"]]],["Facturacion",[["invoice-pending","Pendientes de Factura","PF"],["history","Historial","HI"]]],["Configuracion",[["rates","Tarifas","TR"],["clients","Clientes","CL"],["commercial","Parametros Comerciales","PC"]]]];
 const titles={dashboard:["Dashboard","KPIs diarios, calendario semanal, alertas SLA y situacion viva de servicios submarinos."],"quote-new":["Nueva Cotizacion","Analisis con IA del email, deteccion de Cotizacion o Disponibilidad y preview operativo."],quotes:["Expedientes","Expedientes de servicio con acciones operativas, permisos, reportes y facturacion."],followup:["Seguimiento","Cotizaciones pendientes con mas de 3 dias sin respuesta."],confirmed:["Servicios Confirmados","Servicios listos para documentacion pre-arribo y permisos."],prearrival:["Documentacion Pre-Arribo","Checklist operacional con fecha y notas."],"permits-form":["Solicitudes Pendientes","Formulario DockRP con documentos simulados."],"permits-status":["Estado Permisos","Kanban de permisos y alertas SLA."],"ops-calendar":["Calendario Operacional","Vista de expedientes por semana, mes o año, filtrada por estado."],divers:["Pizarra Buzos","Asignacion de Equipo A / B, bunkering y permisos."],active:["Servicios Activos","Transiciones de servicio y previews de email."],worksheets:["Worksheets","Carga de horas, calado, visibilidad y notas."],"final-reports":["Reportes Finales","Preview de reporte final y envio simulado."],"invoice-pending":["Pendientes de Factura","Servicios con reporte enviado y sin factura."],history:["Historial","Servicios cerrados y resumen financiero."],rates:["Tarifas","Tabla editable por rango de eslora."],clients:["Clientes","Maestro de clientes."],commercial:["Parametros Comerciales","Reglas comerciales y operativas."]};
-function seed(){return{current:"quotes",uwPort:"algeciras",uwPortChosen:false,pizarraEnvios:[],sort:{key:"eta",dir:"asc"},filters:{text:"",status:"all",client:"all"},quoteForm:{requestType:"quote",exampleId:"q1",email:examples[0].body,ship:"Pavilion",client:"CMA CGM",services:["Hull cleaning","Propeller polishing"],date:"2025-05-23",method:"Clean equipment during bunkering",template:"A"},clients:[["Alfa Ship","Agent",10,true,"ops@alfaship.example"],["CMA CGM","Direct",0,false,"uws@cma-cgm.example"],["MERS","Direct",0,true,"marine@mers.example"],["Augusta Maritime","Agent",15,false,"agency@augusta.example"],["Global UWS","Broker",10,false,"broker@globaluws.example"]].map(([name,type,commission,special,email])=>({name,type,commission,special,email,notes:"",minHours:name==="Alfa Ship"?4:name==="Global UWS"?4:name==="HCR"?3:name==="MERS"?4:name==="Augusta Maritime"?3:2,reqs:{firmaHoja:name==="HCR"||name==="Global UWS",softBrushes:name==="Alfa Ship",requiereSurveyor:false,aprobPrevia:name==="Alfa Ship",fotosRef:name==="Alfa Ship"},reqsText:name==="Alfa Ship"?"UWI y limpieza directa. Proceder con limpieza directa de lo sucio evitando demoras. Mantener informados de resultados e ETC con fotos de referencia. Ante imprevistos informar inmediatamente por tel y email. Trabajos adicionales requieren aprobacion previa.":name==="HCR"?"Firmar hoja de satisfaccion HCR al finalizar el servicio. Incluir inspector en todas las operaciones de clase.":""})),ships:[["Newport","9876543",185],["Yenisei","9234567",245],["Milan","9345678",288],["Sakizaya","9456789",312],["Janiceye","9567890",210],["Jenny Say River","9678901",175],["Wilson","9789012",195],["Pavilion","9890123",228]].map(([name,imo,loa])=>({name,imo,loa})),rates:[["0-100m",0,100,1200,4200,1400,6500],["100-150m",100,150,1600,5800,1900,8800],["150-200m",150,200,2100,7400,2600,11200],["200-250m",200,250,2600,9100,3300,13900],["250-300m",250,300,3200,11200,4100,16800],["300m+",300,999,3900,13800,5200,20600]].map(([range,min,max,inspection,cleaning,propeller,full])=>({range,min,max,inspection,cleaning,propeller,full})),params:{paymentDays:30,standardDiscount:10,exceptionDiscount:15,slaDays:4,incompatibleBarges:["Pabunker 21","Villarreal","Valladolid","Per-Loyal","A-LONG"],
+function seed(){return{current:"quotes",uwPort:"algeciras",uwPortChosen:false,pizarraEnvios:[],sort:{key:"eta",dir:"asc"},filters:{text:"",status:"all",client:"all"},quoteForm:{requestType:"quote",exampleId:"q1",email:examples[0].body,ship:"Pavilion",client:"CMA CGM",services:["Hull cleaning","Propeller polishing"],date:"2025-05-23",method:"Clean equipment during bunkering",template:"A"},clients:[["Alfa Ship","Agent",10,true,"ops@alfaship.example"],["CMA CGM","Direct",0,false,"uws@cma-cgm.example"],["MERS","Direct",0,true,"marine@mers.example"],["Augusta Maritime","Agent",15,false,"agency@augusta.example"],["Global UWS","Broker",10,false,"broker@globaluws.example"]].map(([name,type,commission,special,email])=>({name,type,commission,special,email,notes:"",minHours:name==="Alfa Ship"?4:name==="Global UWS"?4:name==="HCR"?3:name==="MERS"?4:name==="Augusta Maritime"?3:2,reqs:{firmaHoja:name==="HCR"||name==="Global UWS",softBrushes:name==="Alfa Ship",requiereSurveyor:false,aprobPrevia:name==="Alfa Ship",fotosRef:name==="Alfa Ship"},reqsText:name==="Alfa Ship"?"UWI y limpieza directa. Proceder con limpieza directa de lo sucio evitando demoras. Mantener informados de resultados e ETC con fotos de referencia. Ante imprevistos informar inmediatamente por tel y email. Trabajos adicionales requieren aprobacion previa.":name==="HCR"?"Firmar hoja de satisfaccion HCR al finalizar el servicio. Incluir inspector en todas las operaciones de clase.":""})),ships:[["Newport","9876543",185],["Yenisei","9234567",245],["Milan","9345678",288],["Sakizaya","9456789",312],["Janiceye","9567890",210],["Jenny Say River","9678901",175],["Wilson","9789012",195],["Pavilion","9890123",228]].map(([name,imo,loa])=>({name,imo,loa})),rates:[["0-100m",0,100,1200,4200,1400,6500],["100-150m",100,150,1600,5800,1900,8800],["150-200m",150,200,2100,7400,2600,11200],["200-250m",200,250,2600,9100,3300,13900],["250-300m",250,300,3200,11200,4100,16800],["300m+",300,999,3900,13800,5200,20600]].map(([range,min,max,inspection,cleaning,propeller,full])=>({range,min,max,inspection,cleaning,propeller,full})),params:{billingEmail:"facturacion@amadesam.es",paymentDays:30,standardDiscount:10,exceptionDiscount:15,slaDays:4,incompatibleBarges:["Pabunker 21","Villarreal","Valladolid","Per-Loyal","A-LONG"],
       bargesList:["Bahia One","Bahia Sur","Pabunker 21","Villarreal","Valladolid","Per-Loyal","A-LONG","Tanger Express","Bahia Algeciras","Castillo Sur","Levante One","Bahia Norte"],attachments:"Antifouling certificate, safety brief, permit docs, arrival instructions"},quotes:[{id:"q-newport",ref:"JN-2026-041",requestType:"quote",ship:"Newport",client:"Alfa Ship",eta:"2025-05-19",services:["Hull cleaning","Propeller polishing"],status:"progress",lastAction:"Comence enviado 08:34",lastContact:"2025-05-18",amount:10000,log:["Quote sent","Client confirmed","Permit approved","Diver in water"]},{id:"q-yenisei",ref:"JN-2026-042",requestType:"availability",ship:"Yenisei",client:"MERS",eta:"2025-05-24",services:["Hull cleaning","Class survey support"],status:"confirmed",lastAction:"Disponibilidad confirmada",lastContact:"2025-05-19",amount:14500,log:["Availability confirmed","Client requested quote"]},{id:"q-milan",ref:"JN-2026-043",requestType:"quote",ship:"Milan",client:"Global UWS",eta:"2025-05-28",services:["Hull inspection"],status:"quoted",lastAction:"Sin respuesta 4 dias",lastContact:"2025-05-15",amount:3200,log:["Quote sent"]},{id:"q-sakizaya",ref:"JN-2026-039",requestType:"quote",ship:"Sakizaya",client:"CMA CGM",eta:"2025-05-10",services:["Hull cleaning","Propeller polishing","Sea chest cleaning"],status:"closed",lastAction:"Reporte + factura enviados",lastContact:"2025-05-12",amount:20600,log:["Quote sent","Completed","Report sent","Invoice sent"]}],permits:[{id:"p-newport",ship:"Newport",agent:"Alfa Ship",eta:"2025-05-19",zone:"Fondeo B",status:"Aprobado",jnn:"JNN-2025-118"},{id:"p-yenisei",ship:"Yenisei",agent:"Alfa Ship",eta:"2025-05-24",zone:"TTI",status:"Solicitud enviada",jnn:"JNN-2025-119"},{id:"p-milan",ship:"Milan",agent:"Global UWS",eta:"2025-05-28",zone:"APM",status:"Pendiente de envio",jnn:"JNN-2025-120"}],services:[{id:"svc-newport",quoteId:"q-newport",ship:"Newport",client:"Alfa Ship",eta:"2025-05-19T07:40",status:"progress",opStage:"Buzo en agua",team:"A",barge:"Bahia One",surveyor:"N/A",permit:"Aprobado",reportSent:false,invoiced:false,prearrivalSent:true,photos:"",worksheet:null},{id:"svc-yenisei",quoteId:"q-yenisei",ship:"Yenisei",client:"MERS",eta:"2025-05-24T11:00",status:"confirmed",opStage:"Esperando llegada",team:"B",barge:"Villarreal",surveyor:"Lloyds - Marc L.",permit:"Solicitud enviada",reportSent:false,invoiced:false,prearrivalSent:false,photos:"",worksheet:null},{id:"svc-sakizaya",quoteId:"q-sakizaya",ship:"Sakizaya",client:"CMA CGM",eta:"2025-05-10T10:30",status:"closed",opStage:"Completado",team:"A",barge:"N/A",surveyor:"N/A",permit:"Aprobado",reportSent:true,invoiced:true,prearrivalSent:true,photos:"https://drive.example/sakizaya",worksheet:{start:"09:00",end:"15:00",draft:"12.1",hours:6,work:"Full cleaning",visibility:"Good",notes:"Closed"}}],prearrival:{},pizarraOverrides:{}}}
 let state=load();normalizeJobs();
 if(!state.uwPort)state.uwPort="algeciras";
@@ -1156,7 +1156,7 @@ function lClientsView(){
   const f=lState.filters;
   const rows=lState.clients||[];
   const types=["crew","provisiones","basura","aguada","lubricantes","lubricantes_barco","underwater"];
-  return`<div class="panel"><div class="section"><div><h3>Clientes y tarifas</h3><p>Tarifas por tipo de servicio y horas minimas facturables. Los cambios alimentan el formulario de nuevo servicio automaticamente.</p></div><button class="btn primary" data-l-action="new-client">+ Nuevo cliente</button></div><div style="overflow:auto"><table style="min-width:1100px"><thead><tr><th>Cliente</th><th>Tipo</th><th>Min.h</th><th>Email</th><th>Tel / WA</th>${types.map(t=>`<th style="font-size:10px">${h(lServiceTypeLabel(t))}</th>`).join("")}<th>Acciones</th></tr></thead><tbody>${rows.map((c,i)=>`<tr><td><strong>${h(c.name)}</strong></td><td><span class="badge progress">${h(c.type)}</span></td><td class="mono" style="font-weight:900">${c.minHours}h</td><td class="muted" style="font-size:12px">${h(c.email)}</td><td><a href="https://wa.me/${(c.phone||"").replace(/\D/g,"")}" target="_blank" class="btn good" style="font-size:11px;min-height:28px;text-decoration:none">📱 ${h(c.phone)}</a></td>${types.map(t=>`<td class="mono">${c.rates&&c.rates[t]?`€${c.rates[t]}`:"—"}</td>`).join("")}<td><button class="btn" data-l-action="edit-client" data-idx="${i}">Editar</button></td></tr>`).join("")}</tbody></table></div></div>`;
+  return`<div class="panel" style="margin-bottom:12px"><div class="section"><div><h3>Configuracion de facturacion</h3><p>Email destino para solicitudes de factura.</p></div></div><div style="display:flex;gap:10px;align-items:flex-end;max-width:500px"><label style="flex:1;font-size:12px">Email de facturacion<input id="lBillingEmail" value="${h(lState.params.billingEmail||'facturacion@amadesam.es')}" type="email"></label><button class="btn primary" onclick="lSaveBillingEmail()">Guardar</button></div></div><div class="panel"><div class="section"><div><h3>Clientes y tarifas</h3><p>Tarifas por tipo de servicio y horas minimas facturables. Los cambios alimentan el formulario de nuevo servicio automaticamente.</p></div><button class="btn primary" data-l-action="new-client">+ Nuevo cliente</button></div><div style="overflow:auto"><table style="min-width:1100px"><thead><tr><th>Cliente</th><th>Tipo</th><th>Min.h</th><th>Email</th><th>Tel / WA</th>${types.map(t=>`<th style="font-size:10px">${h(lServiceTypeLabel(t))}</th>`).join("")}<th>Acciones</th></tr></thead><tbody>${rows.map((c,i)=>`<tr><td><strong>${h(c.name)}</strong></td><td><span class="badge progress">${h(c.type)}</span></td><td class="mono" style="font-weight:900">${c.minHours}h</td><td class="muted" style="font-size:12px">${h(c.email)}</td><td><a href="https://wa.me/${(c.phone||"").replace(/\D/g,"")}" target="_blank" class="btn good" style="font-size:11px;min-height:28px;text-decoration:none">📱 ${h(c.phone)}</a></td>${types.map(t=>`<td class="mono">${c.rates&&c.rates[t]?`€${c.rates[t]}`:"—"}</td>`).join("")}<td><button class="btn" data-l-action="edit-client" data-idx="${i}">Editar</button></td></tr>`).join("")}</tbody></table></div></div>`;
 }
 function lClientModal(idx){
   const isNew=idx===-1;
@@ -1721,11 +1721,60 @@ function lSetStatus(id,status){
   s.status=status;s.log=s.log||[];s.log.push("Estado cambiado a "+lStatusLabel(status));
   lSave();closeAll();renderLanchas();lServiceDetail(id);toast("Estado actualizado");
 }
-function lCancel(id){const s=lState.services.find(x=>x.id===id);if(!s)return;s.status="cancelled";s.cancelReason=s.cancelReason||"Cancelado desde demo";s.log=s.log||[];s.log.push("Servicio cancelado");lSave();closeAll();renderLanchas();toast("Servicio cancelado")}
+function lCancel(id){
+  const s=lState.services.find(x=>x.id===id);if(!s)return;
+  openModal(`<div class="section"><div><h3>⚠️ Cancelar servicio</h3></div><button class="btn" onclick="closeAll()">X</button></div>
+    <div class="alert danger" style="margin:12px 0">
+      <strong>${h(s.jobNo)} · ${h(s.vessel)}</strong><br>
+      Esta accion cancelara el servicio permanentemente. ¿Confirmas?
+    </div>
+    <div class="toolbar">
+      <button class="btn red" onclick="lConfirmCancel('${id}')">Sí, cancelar</button>
+      <button class="btn" onclick="closeAll()">No, volver</button>
+    </div>`);
+}
+function lConfirmCancel(id){
+  const s=lState.services.find(x=>x.id===id);if(!s)return;
+  s.status="cancelled";s.log=s.log||[];s.log.push("Servicio cancelado");
+  lSave();closeAll();renderLanchas();toast("Servicio cancelado");
+}
 function lInvoice(id){
   const s=lState.services.find(x=>x.id===id);if(!s)return;
-  const x={...lSelectedWorksheet(),vessel:s.vessel,client:s.agent,port:"ALGECIRAS",reference:s.jobNo,completed:s.date,amount:s.amount||lSelectedWorksheet().amount,details:`Servicio de lancha / underwater support segun albaran OCR. Ruta ${s.origin} -> ${s.destination}. Carga ${s.pallets} pallets / ${s.pax} pax. ${s.albaran?.ocrText||s.notes||""}`,pic:s.patron,email:"servicios.maritimos@amadesam.com",commission:"NO"};
-  openModal(`<div class="section"><div><h3>Solicitud de factura</h3><p>${h(s.jobNo)} · generada desde albaran OCR</p></div><button class="btn" onclick="closeAll()">X</button></div>${lInvoiceSheet(x)}<div class="toolbar"><button class="btn primary" data-l-action="confirm-invoice-service" data-id="${s.id}">Enviar a facturacion</button><button class="btn" onclick="closeAll()">Cancelar</button></div>`);
+  const email=lState.params.billingEmail||"facturacion@amadesam.es";
+  const body="Estimado equipo de facturación,\n\n"
+    +"Se solicita emisión de factura para el siguiente servicio:\n\n"
+    +"• Job No.: "+s.jobNo+"\n"
+    +"• Buque: "+s.vessel+"\n"
+    +"• Agente: "+s.agent+"\n"
+    +"• Tipo: "+lServiceTypeLabel(s.type)+"\n"
+    +"• Fecha: "+s.date+" "+s.time+"\n"
+    +"• Lancha: "+s.launch+"\n"
+    +"• Patrón: "+s.patron+"\n"
+    +"• Pallets: "+(s.pallets||0)+" · Pasajeros: "+(s.pax||0)+"\n"
+    +(s.salidaMuelle?("• Salida muelle: "+s.salidaMuelle+"\n"):"")
+    +(s.salidaAbarloado?("• Abarloado: "+s.salidaAbarloado+"\n"):"")
+    +"\nQueda adjunto el albarán para su proceso.\n\nGracias,\nAMADESAM Operaciones";
+  openModal(`<div class="section"><div><h3>Enviar a facturación</h3></div><button class="btn" onclick="closeAll()">X</button></div>
+    <label style="font-size:12px;margin-bottom:8px">Destinatario
+      <input id="lInvEmail" value="${h(email)}" style="font-size:13px">
+    </label>
+    <label style="font-size:12px">Mensaje
+      <textarea id="lInvBody" style="min-height:200px;font-size:12px;font-family:monospace">${h(body)}</textarea>
+    </label>
+    <div class="toolbar" style="margin-top:10px">
+      <button class="btn primary" onclick="lSendInvoiceEmail('${id}')">📧 Enviar por email</button>
+      <button class="btn" onclick="closeAll()">Cancelar</button>
+    </div>`);
+}
+function lSendInvoiceEmail(id){
+  const s=lState.services.find(x=>x.id===id);if(!s)return;
+  const email=document.getElementById("lInvEmail")?.value||lState.params.billingEmail;
+  const body=document.getElementById("lInvBody")?.value||"";
+  const subject="Solicitud factura "+s.jobNo+" - "+s.vessel;
+  window.open("mailto:"+email+"?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body),"_blank");
+  s.invoice={sent:new Date().toISOString(),to:email};
+  s.log=s.log||[];s.log.push("Enviado a facturación: "+email);
+  lSave();closeAll();renderLanchas();lServiceDetail(id);toast("Email de facturación enviado");
 }
 function lConfirmInvoice(id){const s=lState.services.find(x=>x.id===id);if(!s)return;s.invoice=true;s.status=s.status==="cancelled"?"cancelled":"completed";s.log=s.log||[];s.log.push("Solicitud de factura enviada");lSave();closeAll();renderLanchas();lServiceDetail(id);toast("Solicitud de factura enviada")}
 function lBoardText(){
@@ -1920,8 +1969,196 @@ function lFleetInCase(s){
 function lServiceDetail(id,alertKey){
   lNormalize();
   const s=lState.services.find(x=>x.id===id);if(!s)return;
-  const _ab=alertKey?`<div class="alert danger" style="margin-bottom:12px;border-left:4px solid #ef4444;padding-left:10px"><strong>⚠️ Alerta: ${h(alertKey.replace(/_/g,' '))}</strong> — Este expediente tiene una alerta pendiente de resolucion.</div>`:"";
-  openDrawer(_ab+`<div class="section"><div><h3>${h(s.jobNo)} · ${h(s.vessel)}</h3><p>${h(s.agent)} · ${h(lServiceTypeLabel(s.type))} · ${h(lPortCfg().label)}</p></div><button class="btn" onclick="closeAll()">X</button></div><div class="case-kpis"><div class="case-kpi"><strong>ETA</strong><span>${h(String(s.eta||"").replace("T"," "))}</span></div><div class="case-kpi"><strong>ETS</strong><span>${h(s.ets||"Pendiente")}</span></div><div class="case-kpi"><strong>Muelle</strong><span>${h(s.berth||s.destination)}</span></div><div class="case-kpi"><strong>Estado</strong><span>${lBadge(s.status)}</span></div></div><div class="case-shell" style="margin-top:12px"><div class="card"><h3>Datos desde inicio</h3><p><strong>Ref. agente:</strong> ${h(s.ref||"-")} · <strong>Fecha:</strong> ${h(s.date)} · <strong>Salida:</strong> ${h(s.time)} · <strong>Recogida:</strong> ${h(s.pickupTime||s.time)}</p><p><strong>Ruta:</strong> ${h(s.origin||s.pickup)} -> ${h(s.berth||s.destination)}</p><p><strong>Carga:</strong> ${s.pallets} pallets · ${s.pax} pax · ${s.duration} hrs</p><p><strong>Notas:</strong> ${h(s.notes||"Sin notas")}</p></div>${lFleetInCase(s)}<div class="card case-wide"><div class="section"><div><h3>Acciones del expediente</h3><p>Todo se ejecuta desde el expediente: editar, cambiar estado, OCR, albaran y factura.</p></div></div><div class="timeline">${["Solicitud","Asignacion","En servicio","Albaran OCR","Factura"].map((x,i)=>`<div class="stage ${lStepActive(s,i<2?i:i+1)?"active":""}">${x}</div>`).join("")}</div><div class="toolbar"><button class="btn" data-l-action="edit-service" data-id="${s.id}">Editar todo</button><button class="btn" data-l-action="case-instructions" data-id="${s.id}">Instrucciones patron</button><button class="btn" data-l-action="set-service-status" data-id="${s.id}" data-status="progress">Iniciar servicio</button><button class="btn good" data-l-action="set-service-status" data-id="${s.id}" data-status="completed">Completar</button><button class="btn" data-l-action="albaran-ocr" data-id="${s.id}">Albaran OCR</button><button class="btn warn" data-l-action="invoice-service" data-id="${s.id}">Emitir factura</button><button class="btn red" data-l-action="cancel-service" data-id="${s.id}">Cancelar</button></div></div>${lServiceCaseOcr(s.id)}<div class="card"><h3>Albaran dentro del expediente</h3>${s.albaran?.uploaded?`<p><strong>Firmado por:</strong> ${h(s.albaran.signedBy)}</p><p><strong>Horas:</strong> ${h(s.albaran.hours)}</p><div class="alert">${h(s.albaran.ocrText)}</div>`:'<div class="empty">Pendiente de cargar albaran OCR.</div>'}</div><div class="card case-wide"><h3>Log de expediente</h3><table><tbody>${(s.log||[]).map(x=>`<tr><td>${h(x)}</td></tr>`).join("")}</tbody></table></div></div>`);
+  const f=lState.fleet.find(x=>x.name===s.launch);
+  const conf=lConflictFor(s).filter(x=>x.id!==s.id);
+
+  // ── Estado actual y timeline ──
+  function stepDone(i){
+    if(i===0)return true; // Solicitud siempre done
+    if(i===1)return["assigned","progress","completed","cancelled"].includes(s.status);
+    if(i===2)return!!(s.salidaMuelle); // En servicio: vinculado a salida muelle
+    if(i===3)return!!(s.albaran?.uploaded);
+    if(i===4)return!!(s.invoice);
+    return false;
+  }
+  const steps=["Solicitud","Asignacion","En servicio","Albaran OCR","Factura"];
+  const timeline=steps.map((x,i)=>{
+    const done=stepDone(i);
+    const current=done&&!stepDone(i+1);
+    return`<div class="stage ${done?"active":""} ${current?"current":""}">
+      <span class="stage-num">${done?"✓":i+1}</span>
+      <span>${x}</span>
+    </div>`;
+  }).join("");
+
+  // ── Alert banner ──
+  const alertBanner=alertKey?`<div class="alert danger" style="margin-bottom:12px;border-left:4px solid #ef4444;padding-left:10px">
+    <strong>⚠️ Alerta activa</strong> — ${h(alertKey.replace(/_/g," "))}. Revisa los campos destacados antes de continuar.
+  </div>`:"";
+
+  // ── Botones de accion segun estado ──
+  const canAssign=s.status==="pending";
+  const canStart=s.status==="assigned"&&!s.salidaMuelle;
+  const canOcr=s.status==="progress"||s.status==="completed";
+  const canInvoice=!!(s.albaran?.uploaded)&&!s.invoice;
+  const canCancel=!["cancelled","completed"].includes(s.status);
+
+  const actionBtns=`
+    ${canAssign?`<button class="btn primary" data-l-action="assign-launch" data-id="${s.id}">Asignar lancha</button>`:""}
+    ${canOcr?`<button class="btn" data-l-action="albaran-ocr" data-id="${s.id}">Albaran OCR</button>`:""}
+    ${canInvoice?`<button class="btn warn" data-l-action="invoice-service" data-id="${s.id}">Enviar a facturacion</button>`:""}
+    ${canCancel?`<button class="btn red" data-l-action="cancel-service" data-id="${s.id}">Cancelar servicio</button>`:""}
+  `;
+
+  // ── Whatsapp patron ──
+  const waPatron=s.patron?`<a href="https://wa.me/?text=${encodeURIComponent("AMADESAM - "+s.jobNo+": "+s.vessel+" "+s.date+" "+s.time+". Lancha: "+s.launch+". Patron: "+s.patron)}" target="_blank" class="btn" style="text-decoration:none">💬 WhatsApp patrón</a>`:"";
+
+  openDrawer(alertBanner+`
+  <div class="section">
+    <div>
+      <h3>${h(s.jobNo)} · ${h(s.vessel)}</h3>
+      <p class="muted">${h(s.agent)} · ${h(lServiceTypeLabel(s.type))} · ${lBadge(s.status)}</p>
+    </div>
+    <button class="btn" onclick="closeAll()">X</button>
+  </div>
+
+  <div class="timeline" style="margin-bottom:16px">${timeline}</div>
+
+  <div class="grid two" style="gap:12px">
+
+    <!-- Seccion 1: Datos del servicio -->
+    <div class="card">
+      <h3 style="font-size:13px;color:var(--sea);margin-bottom:10px">📋 Datos del servicio</h3>
+      <div class="grid two" style="gap:8px">
+        <label style="margin:0;font-size:12px">Fecha
+          <input type="date" value="${h(s.date)}" onchange="lSaveField('${s.id}','date',this.value)">
+        </label>
+        <label style="margin:0;font-size:12px">Hora salida
+          <input type="time" value="${h(s.time)}" onchange="lSaveField('${s.id}','time',this.value)">
+        </label>
+        <label style="margin:0;font-size:12px">Origen
+          <input value="${h(s.origin||s.pickup||"")}" onchange="lSaveField('${s.id}','origin',this.value)">
+        </label>
+        <label style="margin:0;font-size:12px">Destino
+          <input value="${h(s.destination||s.berth||"")}" onchange="lSaveField('${s.id}','destination',this.value)">
+        </label>
+        <label style="margin:0;font-size:12px">Pallets
+          <input type="number" value="${s.pallets||0}" onchange="lSaveField('${s.id}','pallets',+this.value)" ${alertKey==="pallets"?"style='border-color:#ef4444'":""}>
+          ${f&&+(s.pallets||0)>(f.pallets||0)?`<span style="color:#ef4444;font-size:10px">⚠️ Excede cap. ${f.pallets}</span>`:""}
+        </label>
+        <label style="margin:0;font-size:12px">Pasajeros
+          <input type="number" value="${s.pax||0}" onchange="lSaveField('${s.id}','pax',+this.value)" ${alertKey==="pax"?"style='border-color:#ef4444'":""}>
+          ${f&&+(s.pax||0)>(f.pax||0)?`<span style="color:#ef4444;font-size:10px">⚠️ Excede cap. ${f.pax}</span>`:""}
+        </label>
+        <label style="margin:0;font-size:12px">Duracion (h)
+          <input type="number" value="${s.duration||2}" onchange="lSaveField('${s.id}','duration',+this.value)">
+        </label>
+        <label style="margin:0;font-size:12px">Ref. agente
+          <input value="${h(s.ref||"")}" onchange="lSaveField('${s.id}','ref',this.value)">
+        </label>
+      </div>
+      <label style="font-size:12px;margin-top:8px">Notas
+        <textarea style="min-height:60px" onchange="lSaveField('${s.id}','notes',this.value)">${h(s.notes||"")}</textarea>
+      </label>
+    </div>
+
+    <!-- Seccion 2: Flota y patron -->
+    <div class="card">
+      <h3 style="font-size:13px;color:var(--sea);margin-bottom:10px">🚤 Flota y patrón</h3>
+      <label style="font-size:12px">Lancha asignada
+        <select onchange="lSaveField('${s.id}','launch',this.value)">
+          ${lState.fleet.map(fl=>`<option value="${h(fl.name)}" ${s.launch===fl.name?"selected":""}>${h(fl.name)}</option>`).join("")}
+        </select>
+      </label>
+      ${f?`<div style="background:#f4f8fa;border-radius:8px;padding:10px;margin-top:8px;font-size:12px">
+        <strong>${h(f.name)}</strong> · ${h(f.base)}<br>
+        Cap: ${f.pallets} pallets · ${f.pax} pax · Patrón base: ${h(f.patron)}
+      </div>`:""}
+      <label style="font-size:12px;margin-top:10px">Patrón asignado
+        <input value="${h(s.patron||"")}" onchange="lSaveField('${s.id}','patron',this.value)">
+      </label>
+      <div style="margin-top:12px">${waPatron}</div>
+    </div>
+
+    <!-- Seccion 3: Operacion en muelle -->
+    <div class="card">
+      <h3 style="font-size:13px;color:var(--sea);margin-bottom:10px">⚓ Operación en muelle</h3>
+      <div class="grid two" style="gap:8px">
+        <label style="margin:0;font-size:12px">Salida a muelle — Fecha
+          <input type="date" value="${h((s.salidaMuelle||"").slice(0,10))}" onchange="lSaveMuelleField('${s.id}','date',this.value)">
+        </label>
+        <label style="margin:0;font-size:12px">Salida a muelle — Hora
+          <input type="time" value="${h((s.salidaMuelle||"").slice(11,16))}" onchange="lSaveMuelleField('${s.id}','time',this.value)">
+        </label>
+        <label style="margin:0;font-size:12px">Salida a abarloado — Fecha
+          <input type="date" value="${h((s.salidaAbarloado||"").slice(0,10))}" onchange="lSaveAbarloField('${s.id}','date',this.value)">
+        </label>
+        <label style="margin:0;font-size:12px">Salida a abarloado — Hora
+          <input type="time" value="${h((s.salidaAbarloado||"").slice(11,16))}" onchange="lSaveAbarloField('${s.id}','time',this.value)">
+        </label>
+      </div>
+      ${s.salidaMuelle?`<div class="alert" style="margin-top:10px;font-size:12px">🟢 En servicio desde ${h(s.salidaMuelle)}</div>`:""}
+    </div>
+
+    <!-- Seccion 4: Acciones -->
+    <div class="card">
+      <h3 style="font-size:13px;color:var(--sea);margin-bottom:10px">⚡ Acciones</h3>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${actionBtns}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Albaran -->
+  <div class="card" style="margin-top:12px">
+    <h3 style="font-size:13px;color:var(--sea);margin-bottom:8px">📄 Albarán</h3>
+    ${s.albaran?.uploaded
+      ?`<div class="grid two"><div><p><strong>Firmado por:</strong> ${h(s.albaran.signedBy)}</p><p><strong>Horas:</strong> ${h(s.albaran.hours)}</p></div><div class="alert">${h(s.albaran.ocrText)}</div></div>`
+      :'<div class="empty">Pendiente de cargar albarán OCR.</div>'}
+  </div>
+
+  <!-- Log -->
+  <div class="card" style="margin-top:12px">
+    <h3 style="font-size:13px;color:var(--sea);margin-bottom:8px">📝 Log del expediente</h3>
+    <div style="max-height:160px;overflow-y:auto">
+      ${(s.log||[]).map(x=>`<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--line)">${h(x)}</div>`).join("")}
+    </div>
+  </div>
+  `);
+}
+
+function lSaveBillingEmail(){
+  const v=document.getElementById("lBillingEmail")?.value||"";
+  if(!v){toast("Ingresa un email válido");return;}
+  lState.params=lState.params||{};
+  lState.params.billingEmail=v;
+  lSave();toast("Email de facturación guardado: "+v);
+}
+function lSaveField(id,field,value){
+  const s=lState.services.find(x=>x.id===id);if(!s)return;
+  s[field]=value;
+  // Auto-assign status when launch is set
+  if(field==="launch"&&value&&s.status==="pending"){s.status="assigned";s.log=s.log||[];s.log.push("Lancha asignada: "+value);}
+  lSave();
+}
+
+function lSaveMuelleField(id,part,value){
+  const s=lState.services.find(x=>x.id===id);if(!s)return;
+  const cur=s.salidaMuelle||"";
+  const d=cur.slice(0,10)||value,t=cur.slice(11,16)||"00:00";
+  s.salidaMuelle=part==="date"?(value+"T"+t):(d+"T"+value);
+  // Auto-set status to "progress" when salida muelle is set
+  if(s.salidaMuelle&&s.status==="assigned"){s.status="progress";s.log=s.log||[];s.log.push("En servicio — Salida a muelle: "+s.salidaMuelle);}
+  lSave();lServiceDetail(id);
+}
+
+function lSaveAbarloField(id,part,value){
+  const s=lState.services.find(x=>x.id===id);if(!s)return;
+  const cur=s.salidaAbarloado||"";
+  const d=cur.slice(0,10)||value,t=cur.slice(11,16)||"00:00";
+  s.salidaAbarloado=part==="date"?(value+"T"+t):(d+"T"+value);
+  lSave();
 }
 function lRunCaseOcr(id){
   const s=lState.services.find(x=>x.id===id);if(!s)return;
