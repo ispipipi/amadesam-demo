@@ -1,4 +1,4 @@
-<!-- v20260701231641 -->
+<!-- v20260701232217 -->
 <!-- cache-bust:2026-07-01T13:54:52.682318+00:00 -->
 <!doctype html>
 <html lang="es">
@@ -1156,7 +1156,7 @@ function lClientsView(){
   const f=lState.filters;
   const rows=lState.clients||[];
   const types=["crew","provisiones","basura","aguada","lubricantes","lubricantes_barco","underwater"];
-  return`<div class="panel" style="margin-bottom:12px"><div class="section"><div><h3>Configuracion de facturacion</h3><p>Email destino para solicitudes de factura.</p></div></div><div style="display:flex;gap:10px;align-items:flex-end;max-width:500px"><label style="flex:1;font-size:12px">Email de facturacion<input id="lBillingEmail" value="${h(lState.params.billingEmail||'facturacion@amadesam.es')}" type="email"></label><button class="btn primary" onclick="lSaveBillingEmail()">Guardar</button></div></div><div class="panel"><div class="section"><div><h3>Clientes y tarifas</h3><p>Tarifas por tipo de servicio y horas minimas facturables. Los cambios alimentan el formulario de nuevo servicio automaticamente.</p></div><button class="btn primary" data-l-action="new-client">+ Nuevo cliente</button></div><div style="overflow:auto"><table style="min-width:1100px"><thead><tr><th>Cliente</th><th>Tipo</th><th>Min.h</th><th>Email</th><th>Tel / WA</th>${types.map(t=>`<th style="font-size:10px">${h(lServiceTypeLabel(t))}</th>`).join("")}<th>Acciones</th></tr></thead><tbody>${rows.map((c,i)=>`<tr><td><strong>${h(c.name)}</strong></td><td><span class="badge progress">${h(c.type)}</span></td><td class="mono" style="font-weight:900">${c.minHours}h</td><td class="muted" style="font-size:12px">${h(c.email)}</td><td><a href="https://wa.me/${(c.phone||"").replace(/\D/g,"")}" target="_blank" class="btn good" style="font-size:11px;min-height:28px;text-decoration:none">📱 ${h(c.phone)}</a></td>${types.map(t=>`<td class="mono">${c.rates&&c.rates[t]?`€${c.rates[t]}`:"—"}</td>`).join("")}<td><button class="btn" data-l-action="edit-client" data-idx="${i}">Editar</button></td></tr>`).join("")}</tbody></table></div></div>`;
+  return`<div class="panel" style="margin-bottom:12px"><div class="section"><div><h3>Configuracion de facturacion</h3><p>Email destino para solicitudes de factura.</p></div></div><div style="display:flex;gap:10px;align-items:flex-end;max-width:500px"><label style="flex:1;font-size:12px">Email de facturacion<input id="lBillingEmail" value="${h((lState.params||{}).billingEmail||'facturacion@amadesam.es')}" type="email"></label><button class="btn primary" onclick="lSaveBillingEmail()">Guardar</button></div></div><div class="panel"><div class="section"><div><h3>Clientes y tarifas</h3><p>Tarifas por tipo de servicio y horas minimas facturables. Los cambios alimentan el formulario de nuevo servicio automaticamente.</p></div><button class="btn primary" data-l-action="new-client">+ Nuevo cliente</button></div><div style="overflow:auto"><table style="min-width:1100px"><thead><tr><th>Cliente</th><th>Tipo</th><th>Min.h</th><th>Email</th><th>Tel / WA</th>${types.map(t=>`<th style="font-size:10px">${h(lServiceTypeLabel(t))}</th>`).join("")}<th>Acciones</th></tr></thead><tbody>${rows.map((c,i)=>`<tr><td><strong>${h(c.name)}</strong></td><td><span class="badge progress">${h(c.type)}</span></td><td class="mono" style="font-weight:900">${c.minHours}h</td><td class="muted" style="font-size:12px">${h(c.email)}</td><td><a href="https://wa.me/${(c.phone||"").replace(/\D/g,"")}" target="_blank" class="btn good" style="font-size:11px;min-height:28px;text-decoration:none">📱 ${h(c.phone)}</a></td>${types.map(t=>`<td class="mono">${c.rates&&c.rates[t]?`€${c.rates[t]}`:"—"}</td>`).join("")}<td><button class="btn" data-l-action="edit-client" data-idx="${i}">Editar</button></td></tr>`).join("")}</tbody></table></div></div>`;
 }
 function lClientModal(idx){
   const isNew=idx===-1;
@@ -1735,7 +1735,7 @@ function lConfirmCancel(id){
 }
 function lInvoice(id){
   const s=lState.services.find(x=>x.id===id);if(!s)return;
-  const email=lState.params.billingEmail||"facturacion@amadesam.es";
+  const email=(lState.params||{}).billingEmail||"facturacion@amadesam.es";
   const body="Estimado equipo de facturación,\n\n"
     +"Se solicita emisión de factura para el siguiente servicio:\n\n"
     +"• Job No.: "+s.jobNo+"\n"
@@ -2126,7 +2126,7 @@ function lServiceDetail(id,alertKey){
 function lSaveBillingEmail(){
   const v=document.getElementById("lBillingEmail")?.value||"";
   if(!v){toast("Ingresa un email válido");return;}
-  lState.params=lState.params||{};
+  if(!lState.params)lState.params={};
   lState.params.billingEmail=v;
   lSave();toast("Email de facturación guardado: "+v);
 }
