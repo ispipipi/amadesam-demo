@@ -1139,7 +1139,7 @@ ensureUwWorkflowCss();
 compactMenu();
 render();
 
-const LKEY="amadesam-lanchas-demo-v3";
+const LKEY="amadesam-lanchas-demo-v4";
 const lToday=new Date();
 function lIso(offset=0){const d=new Date(lToday);d.setDate(d.getDate()+offset);return d.toISOString().slice(0,10)}
 function lTimeLabel(date,time){return`${date} ${time||"00:00"}`}
@@ -1763,7 +1763,7 @@ function lPortCfg(){
   ,all:{id:"all",label:"Algeciras + Huelva",locode:"ES",lat:"36.8",lon:"-6.2",zoom:"9",link:"https://www.vesselfinder.com",areas:["Todos los puertos"]}}[lState.port||"algeciras"]||{id:"algeciras",label:"Algeciras",locode:"ESALG",lat:"36.1399",lon:"-5.4206",zoom:"13",link:"https://www.vesselfinder.com/ports/ESALG001",areas:[]};
 }
 function lPortMap(){
-  const p=lPortCfg(),srcdoc=`<html><body style="margin:0;overflow:hidden;background:#dff2f6"><script>var width="100%";var height="360";var latitude="${p.lat}";var longitude="${p.lon}";var zoom="${p.zoom}";var names=true;<\/script><script src="https://www.vesselfinder.com/aismap.js"><\/script></body></html>`;
+  const p=lPortCfg(),srcdoc=`<html><body style="margin:0;overflow:hidden;background:#dff2f6"><script>var width="100%";var height="280";var latitude="${p.lat}";var longitude="${p.lon}";var zoom="${p.zoom}";var names=true;<\/script><script src="https://www.vesselfinder.com/aismap.js"><\/script></body></html>`;
   return`<iframe class="vessel-frame" title="VesselFinder · Puerto de ${h(p.label)}" loading="lazy" srcdoc="${h(srcdoc)}"></iframe><div class="map-credit"><span>Fuente AIS: VesselFinder · ${h(p.label)} ${h(p.locode)}</span><a href="${h(p.link)}" target="_blank" rel="noopener">Abrir en VesselFinder</a></div>`;
 }
 function lPortChooser(){
@@ -1822,24 +1822,24 @@ function lDashboard(){
     pending=rows.filter(s=>s.status==="pending").length,
     active=rows.filter(s=>["assigned","progress"].includes(s.status)).length,
     alb=rows.filter(s=>s.status==="completed"&&!s.albaran?.uploaded).length;
-  return`<div class="grid two">
-    <div class="panel vessel-port-panel">
+  return`<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+    <div class="panel vessel-port-panel" style="overflow:hidden">
       <div class="section">
-        <div><h3>VesselFinder · Puerto de ${h(p.label)}</h3><p>Vista AIS practica para ubicar fondeos, terminales, muelles y ventanas de lancha.</p></div>
+        <div><h3>VesselFinder · ${h(p.label)}</h3><p>Vista AIS practica para ubicar fondeos, terminales y ventanas de lancha.</p></div>
         <span class="badge progress">${h(p.locode)}</span>
       </div>
       ${lPortMap()}
       <div class="toolbar">${p.areas.map(a=>`<span class="pill">${h(a)}</span>`).join("")}</div>
     </div>
-    <div class="panel">
+    <div class="panel" style="overflow:auto">
       <div class="section">
         <div><h3>Resumen operativo</h3><p>Servicios, alertas y accesos rapidos.</p></div>
       </div>
-      <div class="grid two">${lMetric("Hoy",today.length,"Servicios programados","today")}${lMetric("Pendientes",pending,"Por confirmar","pending")}${lMetric("En curso",active,"Asignados / servicio","active")}${lMetric("Albaranes",alb,"Pendientes dentro del expediente","albaranes")}</div>
-      <div style="margin-top:14px">${lAlertsHtml()}</div>
+      <div class="grid two" style="margin-bottom:14px">${lMetric("Hoy",today.length,"Servicios programados","today")}${lMetric("Pendientes",pending,"Por confirmar","pending")}${lMetric("En curso",active,"Asignados / servicio","active")}${lMetric("Albaranes",alb,"Pendientes dentro del expediente","albaranes")}</div>
+      <div>${lAlertsHtml()}</div>
     </div>
   </div>
-  <div class="panel" style="margin-top:14px">
+  <div class="panel">
     <div class="section">
       <div><h3>Servicios de ${h(p.label)}</h3><p>Lista operativa. Click en el barco para abrir el expediente completo.</p></div>
       <button class="btn" data-l-nav="pizarras">Ver todos</button>
