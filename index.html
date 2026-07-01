@@ -1428,9 +1428,37 @@ function lMiniMap(){
 }
 function lAlertsHtml(){
   const alerts=[];
-  lAllConflicts().slice(0,4).forEach(x=>alerts.push(`<div class="alert danger"><strong>Conflicto ${h(x.a.launch)}</strong><br>${h(x.a.vessel)} ${h(x.a.time)} / ${h(x.b.vessel)} ${h(x.b.time)} en menos de 3 horas.</div>`));
-  lState.services.filter(s=>lCapacityIssue(s)).slice(0,3).forEach(s=>alerts.push(`<div class="alert danger"><strong>Capacidad excedida</strong><br>${h(s.vessel)} requiere ${s.pallets} pallets y ${s.pax} pax en ${h(s.launch)}.</div>`));
-  lState.services.filter(s=>s.status==="completed"&&!s.albaran?.uploaded).slice(0,3).forEach(s=>alerts.push(`<div class="alert"><strong>Albaran pendiente</strong><br>${h(s.vessel)} · ${h(s.jobNo)} listo para OCR.</div>`));
+  const now=new Date();
+
+  // Conflictos de horario (ya existente)
+  lAllConflicts().slice(0,4).forEach(x=>alerts.push(
+    `<div class="alert danger"><strong>Conflicto ${h(x.a.launch)}</strong><br>${h(x.a.vessel)} ${h(x.a.time)} / ${h(x.b.vessel)} ${h(x.b.time)} en menos de 3 horas.</div>`
+  ));
+
+  // Capacidad excedida (pallets o pasajeros)
+  lState.services.filter(s=>["pending","assigned"].includes(s.status)).forEach(s=>{
+    const fleet=lState.fleet.find(f=>f.name===s.launch);
+    if(!fleet)return;
+    const pallets=+(s.pallets||0), pax=+(s.pax||0);
+    if(pallets>0&&pallets>(fleet.pallets||0))
+      alerts.push(`<div class="alert danger"><strong>Pallets insuficientes — ${h(s.launch)}</strong><br>${h(s.vessel)} solicita ${pallets} pallets, lancha tiene capacidad para ${fleet.pallets}.</div>`);
+    if(pax>0&&pax>(fleet.pax||0))
+      alerts.push(`<div class="alert danger"><strong>Pasajeros insuficientes — ${h(s.launch)}</strong><br>${h(s.vessel)} solicita ${pax} pasajeros, lancha tiene capacidad para ${fleet.pax}.</div>`);
+  });
+
+  // 24h antes de ETA — avisar al patron por WhatsApp
+  lState.services.filter(s=>["pending","assigned"].includes(s.status)&&s.date&&s.time).forEach(s=>{
+    const eta=new Date(s.date+"T"+s.time);
+    const diffH=(eta-now)/3600000;
+    if(diffH>0&&diffH<=24&&!s.patronNotified)
+      alerts.push(`<div class="alert"><strong>Avisar patron — ${h(s.vessel)}</strong><br>ETA en ${Math.round(diffH)}h. ${h(s.jobNo)} \u00B7 Patron: ${h(s.patron)} \u00B7 <a href="https://wa.me/?text=${encodeURIComponent('AMADESAM - Servicio '+s.jobNo+': '+s.vessel+' ETA '+s.date+' '+s.time+'. Patron: '+s.patron+'. Lancha: '+s.launch)}" target="_blank" style="color:#087ea4;font-weight:900">Enviar WhatsApp</a></div>`);
+  });
+
+  // Albaran pendiente
+  lState.services.filter(s=>s.status==="completed"&&!s.albaran?.uploaded).slice(0,3).forEach(s=>
+    alerts.push(`<div class="alert"><strong>Albaran pendiente</strong><br>${h(s.vessel)} \u00B7 ${h(s.jobNo)} listo para OCR.</div>`)
+  );
+
   return alerts.join("")||'<div class="empty">Sin alertas operativas.</div>';
 }
 function lFleetCard(f){
@@ -1786,8 +1814,25 @@ function lServicesView(){
 function lCalendarEvents(status="all"){const p=lState.port||"algeciras";return lState.services.filter(s=>(p==="all"||(s.port||"algeciras")===p)&&(status==="all"||s.status===status)).map(s=>({...s,calStatus:s.status})).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))}
 function lDashboard(){
   lNormalize();
-  const p=lPortCfg(),rows=lFilteredServices().filter(s=>s.status!=="cancelled"),today=rows.filter(s=>s.date===lIso(0)),pending=rows.filter(s=>s.status==="pending").length,active=rows.filter(s=>["assigned","progress"].includes(s.status)).length,alb=rows.filter(s=>s.status==="completed"&&!s.albaran?.uploaded).length;
-  return`${lPortChooser()}<div class="grid two"><div class="panel vessel-port-panel"><div class="section"><div><h3>VesselFinder · Puerto de ${h(p.label)}</h3><p>Vista AIS practica para ubicar fondeos, terminales, muelles y ventanas de lancha.</p></div><span class="badge progress">${h(p.locode)}</span></div>${lPortMap()}<div class="toolbar">${p.areas.map(a=>`<span class="pill">${h(a)}</span>`).join("")}</div></div><div class="panel"><div class="section"><div><h3>Resumen operativo</h3><p>Todo baja al expediente del buque: datos, flota, OCR, albaran y factura.</p></div><button class="btn primary" data-l-action="new-service">Nuevo servicio con OCR</button></div><div class="grid two">${lMetric("Hoy",today.length,"Servicios programados","today")}${lMetric("Pendientes",pending,"Por confirmar","pending")}${lMetric("En curso",active,"Asignados / servicio","active")}${lMetric("Albaranes",alb,"Pendientes dentro del expediente","albaranes")}</div><div style="margin-top:14px">${lAlertsHtml()}</div></div></div><div class="panel" style="margin-top:14px"><div class="section"><div><h3>Servicios de ${h(p.label)}</h3><p>Lista operativa tipo Excel. Click en el barco para ver todo de inicio a final.</p></div><button class="btn" data-l-nav="pizarras">Ver todos</button></div>${lServiceTable(today.length?today:rows.slice(0,6))}</div>`;
+  const p=lPortCfg(),rows=lFilteredServices().filter(s=>s.status!=="cancelled"),
+    today=rows.filter(s=>s.date===lIso(0)),
+    pending=rows.filter(s=>s.status==="pending").length,
+    active=rows.filter(s=>["assigned","progress"].includes(s.status)).length,
+    alb=rows.filter(s=>s.status==="completed"&&!s.albaran?.uploaded).length;
+  return`<div class="panel" style="margin-bottom:14px">
+    <div class="section">
+      <div><h3>Resumen operativo</h3><p>Todo baja al expediente del buque: datos, flota, OCR, albaran y factura.</p></div>
+    </div>
+    <div class="grid two" style="margin-bottom:14px">${lMetric("Hoy",today.length,"Servicios programados","today")}${lMetric("Pendientes",pending,"Por confirmar","pending")}${lMetric("En curso",active,"Asignados / servicio","active")}${lMetric("Albaranes",alb,"Pendientes dentro del expediente","albaranes")}</div>
+    <div>${lAlertsHtml()}</div>
+  </div>
+  <div class="panel">
+    <div class="section">
+      <div><h3>Servicios de ${h(p.label)}</h3><p>Lista operativa. Click en el barco para abrir el expediente completo.</p></div>
+      <button class="btn" data-l-nav="pizarras">Ver todos</button>
+    </div>
+    ${lServiceTable(today.length?today:rows.slice(0,6))}
+  </div>`;
 }
 function lCalendarView(){
   lNormalize();
