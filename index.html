@@ -2150,7 +2150,7 @@ const lNormalizePizarraBase=lNormalize;
 lNormalize=function(){
   const requested=lState.current;
   lNormalizePizarraBase();
-  if(requested==="pizarras")lState.current="pizarras";
+  if(["pizarras","fleet","calendar","records","clients","albaranes"].includes(requested))lState.current=requested;
 }
 renderLNav=function(){
   lNormalize();
