@@ -1451,72 +1451,53 @@ function lServiceTable(rows){
 }
 function lFleetView(){
   lNormalize();
-  var p=lState.port||"algeciras";
-  var fleet=lState.fleet.filter(function(f){return p==="all"||(f.port||"algeciras")===p;});
-
-  function statusColor(st){
-    if(!st||st==="Disponible")return"#10b981";
-    if(st==="En turno")return"#f59e0b";
-    if(/[Mm]anten/.test(st))return"#ef4444";
-    return"#6b7280";
-  }
-  function statusBg(st){
-    if(!st||st==="Disponible")return"#e7f8f1";
-    if(st==="En turno")return"#fff7e8";
-    if(/[Mm]anten/.test(st))return"#fff1f1";
-    return"#f3f4f6";
-  }
-
-  var cards=fleet.map(function(f){
-    var active=lState.services.filter(function(s){return s.launch===f.name&&["pending","assigned","progress"].includes(s.status);});
-    var upcoming=lState.services.filter(function(s){return s.launch===f.name&&["pending","assigned"].includes(s.status);});
-    var palletPct=Math.min(100,Math.round(active.length*18));
-    var paxPct=Math.min(100,Math.round(active.length*15));
-    var sColor=statusColor(f.status);
-    var sBg=statusBg(f.status);
-
-    return "<div class='card' style='margin-bottom:12px;cursor:pointer;border:2px solid transparent;transition:border .15s' "
-      +"onmouseover='this.style.borderColor=\"var(--sea)\"' onmouseout='this.style.borderColor=\"transparent\"' "
-      +"onclick='lOpenFleetDrawer(\""+agH(f.name)+"\")' >"
+  var fleet=lState.fleet;
+  var ports=[['algeciras','Algeciras'],['huelva','Huelva']];
+  function sColor(st){return !st||st==='Disponible'?'#10b981':/turno/i.test(st)?'#f59e0b':/manten/i.test(st)?'#ef4444':'#6b7280';}
+  function sBg(st){return !st||st==='Disponible'?'#e7f8f1':/turno/i.test(st)?'#fff7e8':/manten/i.test(st)?'#fff1f1':'#f3f4f6';}
+  function makeCard(f){
+    var active=lState.services.filter(function(s){return s.launch===f.name&&['pending','assigned','progress'].includes(s.status);});
+    var upcoming=lState.services.filter(function(s){return s.launch===f.name&&['pending','assigned'].includes(s.status);});
+    var sc=sColor(f.status),sb=sBg(f.status);
+    var pills=upcoming.slice(0,3).map(function(s){
+      return "<span style='background:#e8f4fd;color:#087ea4;border-radius:5px;padding:3px 9px;font-size:11px'>"+h(s.vessel)+" \u00B7 "+h(s.date.slice(5))+" "+h(s.time)+"</span>";
+    }).join('');
+    var escapedName=f.name.replace(/'/g,"\\'");
+    return "<div class='card' style='cursor:pointer;border:2px solid transparent;transition:border .15s'"
+      +" onmouseover=\"this.style.borderColor='#087ea4'\" onmouseout=\"this.style.borderColor='transparent'\""
+      +" onclick=\"lOpenFleetDrawer('"+escapedName+"')\">"
       +"<div style='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px'>"
-      +"<div>"
-      +"<h3 style='margin:0 0 3px;font-size:17px'>"+h(f.name)+"</h3>"
-      +"<p style='margin:0;font-size:12px;color:var(--muted)'>Patron base: <strong>"+h(f.patron)+"</strong> \u00B7 "+h(f.base)+"</p>"
+      +"<div><h3 style='margin:0 0 3px'>"+h(f.name)+"</h3>"
+      +"<p style='margin:0;font-size:12px;color:var(--muted)'>Patron: <strong>"+h(f.patron)+"</strong> \u00B7 "+h(f.base)+"</p></div>"
+      +"<span style='background:"+sb+";color:"+sc+";border-radius:20px;padding:3px 12px;font-size:11px;font-weight:900'>"+h(f.status||'Disponible')+"</span>"
       +"</div>"
-      +"<span style='background:"+sBg+";color:"+sColor+";border-radius:20px;padding:3px 12px;font-size:11px;font-weight:900'>"+h(f.status||"Disponible")+"</span>"
+      +"<div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px'>"
+      +"<div style='background:#f4f8fa;border-radius:8px;padding:8px;text-align:center'><p style='margin:0;font-size:10px;color:var(--muted)'>PALLETS</p><strong style='font-size:20px;color:var(--navy)'>"+f.pallets+"</strong></div>"
+      +"<div style='background:#f4f8fa;border-radius:8px;padding:8px;text-align:center'><p style='margin:0;font-size:10px;color:var(--muted)'>PAX</p><strong style='font-size:20px;color:var(--navy)'>"+f.pax+"</strong></div>"
+      +"<div style='background:#f4f8fa;border-radius:8px;padding:8px;text-align:center'><p style='margin:0;font-size:10px;color:var(--muted)'>ACTIVAS</p><strong style='font-size:20px;color:"+(active.length?'#f59e0b':'#10b981')+"'>"+active.length+"</strong></div>"
       +"</div>"
-      +"<div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px'>"
-      +"<div style='background:#f4f8fa;border-radius:8px;padding:10px;text-align:center'>"
-      +"<p style='margin:0;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em'>Pallets</p>"
-      +"<strong style='font-size:22px;color:var(--navy)'>"+f.pallets+"</strong>"
-      +"</div>"
-      +"<div style='background:#f4f8fa;border-radius:8px;padding:10px;text-align:center'>"
-      +"<p style='margin:0;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em'>Pasajeros</p>"
-      +"<strong style='font-size:22px;color:var(--navy)'>"+f.pax+"</strong>"
-      +"</div>"
-      +"<div style='background:#f4f8fa;border-radius:8px;padding:10px;text-align:center'>"
-      +"<p style='margin:0;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em'>Asignaciones</p>"
-      +"<strong style='font-size:22px;color:"+(active.length?"#f59e0b":"#10b981")+";'>"+active.length+"</strong>"
-      +"</div>"
-      +"</div>"
-      +"<div style='display:flex;gap:6px;flex-wrap:wrap'>"
-      +(upcoming.slice(0,3).map(function(s){
-        return "<span style='background:#e8f4fd;color:#087ea4;border-radius:5px;padding:3px 9px;font-size:11px'>"
-          +"\u26F3 "+h(s.vessel)+" \u00B7 "+h(s.date.slice(5))+" "+h(s.time)+"</span>";
-      }).join(""))
-      +(upcoming.length>3?"<span style='font-size:11px;color:var(--muted);padding:3px 6px'>+"+( upcoming.length-3)+" m\u00E1s</span>":"")
-      +(!upcoming.length?"<span style='font-size:11px;color:#10b981'>\u2714 Sin servicios pendientes</span>":"")
-      +"</div>"
-      +"<p style='margin:8px 0 0;font-size:11px;color:var(--muted)'>Clic para ver asignaciones completas</p>"
-      +"</div>";
-  }).join("");
-
+      +"<div style='display:flex;gap:6px;flex-wrap:wrap;min-height:22px'>"
+      +pills
+      +(upcoming.length>3?"<span style='font-size:11px;color:var(--muted)'>+"+(upcoming.length-3)+" m\u00E1s</span>":"")
+      +(!upcoming.length?"<span style='font-size:11px;color:#10b981'>\u2714 Libre</span>":"")
+      +"</div></div>";
+  }
+  var grouped=ports.map(function(pair){
+    var portId=pair[0],portLabel=pair[1];
+    var portFleet=fleet.filter(function(f){return (f.port||'algeciras')===portId;});
+    if(!portFleet.length)return'';
+    return "<div style='margin-bottom:24px'>"
+      +"<div style='font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:#087ea4;background:#e8f4fd;padding:5px 14px;border-radius:6px;margin-bottom:10px'>"
+      +"Puerto de "+portLabel+" \u00B7 "+portFleet.length+" lanchas</div>"
+      +"<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px'>"
+      +portFleet.map(makeCard).join('')
+      +"</div></div>";
+  }).join('');
   return "<div class='panel'>"
-    +"<div class='section'><div><h3>Panel de flota</h3><p>"+fleet.length+" lanchas \u00B7 Clic en una para ver sus asignaciones.</p></div>"
-    +"<button class='btn primary' data-l-action='new-service'>+ Nuevo servicio</button>"
-    +"</div>"
-    +"<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;margin-top:4px'>"
-    +cards+"</div></div>";
+    +"<div class='section'><div><h3>Panel de flota</h3>"
+    +"<p>"+fleet.length+" lanchas en ambos puertos. Clic para ver asignaciones.</p></div>"
+    +"<button class='btn primary' data-l-action='new-service'>+ Nuevo servicio</button></div>"
+    +grouped+"</div>";
 }
 
 function lOpenFleetDrawer(name){
