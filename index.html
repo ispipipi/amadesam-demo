@@ -1,4 +1,4 @@
-<!-- v20260702010749 -->
+<!-- v20260702010930 -->
 <!-- cache-bust:2026-07-01T13:54:52.682318+00:00 -->
 <!doctype html>
 <html lang="es">
@@ -1962,7 +1962,6 @@ function lFleetInCase(s){
   return`<div class="card"><h3>Flota asignada</h3>${f?`<p><strong>${h(f.name)}</strong> · ${h(f.base)}</p><p>Capacidad: ${f.pallets} pallets · ${f.pax} pasajeros</p><p>Patron base: ${h(f.patron)}</p>`:"<p>Sin lancha asignada</p>"}${lCapacityIssue(s)?'<div class="alert danger">Capacidad excedida para esta lancha.</div>':'<div class="alert">Capacidad OK para el servicio.</div>'}${conf.length?`<div class="alert danger" style="margin-top:8px">Conflicto: ${h(conf.map(x=>x.vessel+" "+x.time).join(", "))}</div>`:""}</div>`;
 }
 function lServiceDetail(id,alertKey){
-  lNormalize();
   const s=lState.services.find(x=>x.id===id);if(!s)return;
   const f=lState.fleet.find(x=>x.name===s.launch);
 
