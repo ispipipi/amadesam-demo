@@ -1,4 +1,4 @@
-<!-- v20260702011903 -->
+<!-- v20260702011937 -->
 <!-- cache-bust:2026-07-01T13:54:52.682318+00:00 -->
 <!doctype html>
 <html lang="es">
@@ -1799,7 +1799,7 @@ function lNormalize(){
   if(!lState.pizarraOverrides)lState.pizarraOverrides={};
   lState.services.forEach(s=>{if(!s.port)s.port="algeciras";});
   lState.fleet.forEach(f=>{if(!f.port)f.port="algeciras";});
-  lState.current=["dashboard","services","calendar","records"].includes(lState.current)?lState.current:"dashboard";
+  lState.current=["dashboard","pizarras","services","fleet","calendar","records","clients","albaranes"].includes(lState.current)?lState.current:"dashboard";
   lState.services.forEach((s,i)=>{
     s.ref=s.ref||`AG-${String(3200+i).padStart(4,"0")}`;
     s.eta=s.eta||`${s.date}T${s.time||"08:00"}`;
