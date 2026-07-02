@@ -1,4 +1,4 @@
-<!-- v20260702012759 -->
+<!-- v20260702013222 -->
 <!-- cache-bust:2026-07-01T13:54:52.682318+00:00 -->
 <!doctype html>
 <html lang="es">
@@ -1965,61 +1965,48 @@ function lServiceDetail(id,alertKey){
   const s=lState.services.find(x=>x.id===id);if(!s)return;
   const f=lState.fleet.find(x=>x.name===s.launch);
 
-  // ── Estado: qué paso está completo ──
   function stepDone(i){
     if(i===0)return true;
     if(i===1)return["assigned","progress","completed","cancelled"].includes(s.status);
-    if(i===2)return!!(s.salidaMuelle);
-    if(i===3)return!!(s.albaran&&s.albaran.uploaded);
-    if(i===4)return!!(s.invoice);
+    if(i===2)return!!(s.albaran&&s.albaran.uploaded);
+    if(i===3)return!!(s.invoice);
     return false;
   }
   const steps=[
-    {key:"solicitud",   label:"Solicitud",   icon:"📋", desc:"Servicio creado y en espera de asignacion"},
-    {key:"asignacion",  label:"Asignacion",  icon:"🚤", desc:"Lancha y patron asignados"},
-    {key:"en_servicio", label:"En servicio", icon:"⚓", desc:"Salida a muelle registrada"},
-    {key:"albaran",     label:"Albaran OCR", icon:"📄", desc:"Albaran cargado y procesado"},
-    {key:"factura",     label:"Factura",     icon:"💰", desc:"Enviado a facturacion"},
+    {label:"Solicitud",   icon:"📋", desc:"Servicio creado y en espera de asignacion"},
+    {label:"Asignacion",  icon:"🚤", desc:"Lancha y patron asignados"},
+    {label:"Albaran OCR", icon:"📄", desc:"Albaran cargado y procesado"},
+    {label:"Factura",     icon:"💰", desc:"Enviado a facturacion"},
   ];
   const currentStep=steps.reduce((acc,_,i)=>stepDone(i)?i:acc,0);
 
-  // ── Barra de estado ──
   const stateBar=`<div style="margin-bottom:18px">
     <div style="display:flex;align-items:center;gap:0;margin-bottom:8px">
       ${steps.map((st,i)=>{
-        const done=stepDone(i);
-        const current=i===currentStep;
-        const future=!done&&!current;
-        return`<div style="flex:1;position:relative;display:flex;flex-direction:column;align-items:center">
-          <div style="width:100%;height:4px;background:${done?"#087ea4":current?"#e8f4fd":"#e2e8f0"};margin-bottom:8px;${i===0?"border-radius:4px 0 0 4px":""}${i===4?"border-radius:0 4px 4px 0":""}"></div>
+        const done=stepDone(i),current=i===currentStep;
+        return`<div style="flex:1;display:flex;flex-direction:column;align-items:center">
+          <div style="width:100%;height:4px;background:${done?"#087ea4":current?"#e8f4fd":"#e2e8f0"};margin-bottom:8px"></div>
           <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:6px;
             background:${current?"#087ea4":done?"#e8f4fd":"#f1f5f9"};
             border:2px solid ${current?"#087ea4":done?"#087ea4":"#cbd5e1"};
             box-shadow:${current?"0 0 0 4px #dbeafe":"none"};
-            color:${current?"white":"inherit"}">
-            ${done&&!current?"✓":st.icon}
-          </div>
-          <span style="font-size:10px;font-weight:${current?"900":"500"};color:${current?"#087ea4":done?"#334155":"#94a3b8"};text-align:center;line-height:1.2">${st.label}</span>
+            color:${current?"white":"inherit"}">${done&&!current?"✓":st.icon}</div>
+          <span style="font-size:10px;font-weight:${current?"900":"500"};color:${current?"#087ea4":done?"#334155":"#94a3b8"};text-align:center">${st.label}</span>
         </div>`;
       }).join("")}
     </div>
     <div style="background:#e8f4fd;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px">
       <span style="font-size:20px">${steps[currentStep].icon}</span>
-      <div>
-        <strong style="color:#087ea4;font-size:14px">${steps[currentStep].label}</strong>
-        <p style="margin:0;font-size:12px;color:#475569">${steps[currentStep].desc}</p>
-      </div>
+      <div><strong style="color:#087ea4;font-size:14px">${steps[currentStep].label}</strong>
+      <p style="margin:0;font-size:12px;color:#475569">${steps[currentStep].desc}</p></div>
     </div>
   </div>`;
 
-  // ── Acciones disponibles segun estado ──
   const actions=[];
   if(s.status==="pending")
     actions.push({action:"assign-launch",id:s.id,icon:"🚤",label:"Asignar lancha",tip:"Asigna una lancha y patron a este servicio",cls:"primary"});
-  if(!s.salidaMuelle&&["assigned","progress"].includes(s.status))
-    actions.push({action:"set-salida-muelle",id:s.id,icon:"⚓",label:"Registrar salida muelle",tip:"Registra la hora de salida al muelle para iniciar el servicio",cls:"primary"});
-  if(["progress","completed"].includes(s.status)||s.salidaMuelle)
-    actions.push({action:"albaran-ocr",id:s.id,icon:"📄",label:"Albaran OCR",tip:"Carga el albaran firmado y extrae los datos automaticamente",cls:""});
+  if(["pending","assigned","progress"].includes(s.status))
+    actions.push({action:"albaran-ocr",id:s.id,icon:"📄",label:"Cargar Albaran",tip:"Carga el albaran firmado y extrae los datos automaticamente",cls:""});
   if(s.albaran&&s.albaran.uploaded&&!s.invoice)
     actions.push({action:"invoice-service",id:s.id,icon:"💰",label:"Enviar a facturacion",tip:"Envia el expediente al equipo de facturacion por email",cls:"warn"});
   if(s.patron)
@@ -2028,24 +2015,17 @@ function lServiceDetail(id,alertKey){
     actions.push({action:"cancel-service",id:s.id,icon:"🗑️",label:"Cancelar",tip:"Cancela el servicio. Se pedira confirmacion.",cls:"red"});
 
   const actionBtns=actions.map(a=>{
-    const style=`display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;position:relative;`;
-    const tip=`title="${a.tip}"`;
-    if(a.href)
-      return`<a href="${a.href}" target="_blank" class="btn ${a.cls}" style="${style}text-decoration:none" ${tip}><span>${a.icon}</span><span>${a.label}</span></a>`;
-    return`<button class="btn ${a.cls}" style="${style}" data-l-action="${a.action}" data-id="${a.id}" ${tip}><span>${a.icon}</span><span>${a.label}</span></button>`;
+    if(a.href)return`<a href="${a.href}" target="_blank" class="btn ${a.cls}" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none" title="${a.tip}"><span>${a.icon}</span><span>${a.label}</span></a>`;
+    return`<button class="btn ${a.cls}" style="display:inline-flex;align-items:center;gap:6px" data-l-action="${a.action}" data-id="${a.id}" title="${a.tip}"><span>${a.icon}</span><span>${a.label}</span></button>`;
   }).join("");
 
-  // ── Alert banner ──
   const alertBanner=alertKey?`<div class="alert danger" style="margin-bottom:12px;border-left:4px solid #ef4444;padding-left:10px">
-    <strong>⚠️ Alerta activa — ${h(alertKey.replace(/_/g," "))}</strong><br>Revisa los campos destacados antes de continuar.
-  </div>`:"";
+    <strong>⚠️ Alerta: ${h(alertKey.replace(/_/g," "))}</strong> — Revisa los campos destacados antes de continuar.</div>`:"";
 
   openDrawer(alertBanner+`
   <div class="section">
-    <div>
-      <h3>${h(s.jobNo)} · ${h(s.vessel)}</h3>
-      <p class="muted">${h(s.agent)} · ${h(lServiceTypeLabel(s.type))} · Puerto: ${h(s.port||"Algeciras")}</p>
-    </div>
+    <div><h3>${h(s.jobNo)} · ${h(s.vessel)}</h3>
+    <p class="muted">${h(s.agent)} · ${h(lServiceTypeLabel(s.type))} · Puerto: ${h(s.port||"Algeciras")}</p></div>
     <button class="btn" onclick="closeAll()">X</button>
   </div>
 
@@ -2059,14 +2039,10 @@ function lServiceDetail(id,alertKey){
         <label style="margin:0;font-size:12px">Hora<input type="time" value="${h(s.time)}" onchange="lSaveField('${s.id}','time',this.value)"></label>
         <label style="margin:0;font-size:12px">Origen<input value="${h(s.origin||s.pickup||"")}" onchange="lSaveField('${s.id}','origin',this.value)"></label>
         <label style="margin:0;font-size:12px">Destino<input value="${h(s.destination||s.berth||"")}" onchange="lSaveField('${s.id}','destination',this.value)"></label>
-        <label style="margin:0;font-size:12px">Pallets
-          <input type="number" value="${s.pallets||0}" onchange="lSaveField('${s.id}','pallets',+this.value)" ${alertKey==="pallets"?"style='border-color:#ef4444'":""}>
-          ${f&&+(s.pallets||0)>(f.pallets||0)?`<span style="color:#ef4444;font-size:10px">⚠️ Excede cap. ${f.pallets}</span>`:""}
-        </label>
-        <label style="margin:0;font-size:12px">Pasajeros
-          <input type="number" value="${s.pax||0}" onchange="lSaveField('${s.id}','pax',+this.value)" ${alertKey==="pax"?"style='border-color:#ef4444'":""}>
-          ${f&&+(s.pax||0)>(f.pax||0)?`<span style="color:#ef4444;font-size:10px">⚠️ Excede cap. ${f.pax}</span>`:""}
-        </label>
+        <label style="margin:0;font-size:12px">Pallets<input type="number" value="${s.pallets||0}" onchange="lSaveField('${s.id}','pallets',+this.value)" ${alertKey==="pallets"?"style='border-color:#ef4444'":""}>
+          ${f&&+(s.pallets||0)>(f.pallets||0)?`<span style="color:#ef4444;font-size:10px">⚠️ Excede cap. ${f.pallets}</span>`:""}</label>
+        <label style="margin:0;font-size:12px">Pasajeros<input type="number" value="${s.pax||0}" onchange="lSaveField('${s.id}','pax',+this.value)" ${alertKey==="pax"?"style='border-color:#ef4444'":""}>
+          ${f&&+(s.pax||0)>(f.pax||0)?`<span style="color:#ef4444;font-size:10px">⚠️ Excede cap. ${f.pax}</span>`:""}</label>
         <label style="margin:0;font-size:12px">Duracion (h)<input type="number" value="${s.duration||2}" onchange="lSaveField('${s.id}','duration',+this.value)"></label>
         <label style="margin:0;font-size:12px">Ref. agente<input value="${h(s.ref||"")}" onchange="lSaveField('${s.id}','ref',this.value)"></label>
       </div>
@@ -2074,41 +2050,30 @@ function lServiceDetail(id,alertKey){
     </div>
 
     <div class="card">
-      <h3 style="font-size:13px;color:var(--sea);margin-bottom:10px">🚤 Flota y patrón</h3>
+      <h3 style="font-size:13px;color:var(--sea);margin-bottom:10px">🚤 Flota y patron</h3>
       <label style="font-size:12px">Lancha asignada
         <select onchange="lSaveField('${s.id}','launch',this.value)">
           ${lState.fleet.map(fl=>`<option value="${h(fl.name)}" ${s.launch===fl.name?"selected":""}>${h(fl.name)}</option>`).join("")}
         </select>
       </label>
       ${f?`<div style="background:#f4f8fa;border-radius:8px;padding:10px;margin-top:8px;font-size:12px">
-        <strong>${h(f.name)}</strong> · ${h(f.base)}<br>
-        Cap: ${f.pallets} pallets · ${f.pax} pax · Patrón base: ${h(f.patron)}
-      </div>`:""}
-      <label style="font-size:12px;margin-top:10px">Patrón asignado<input value="${h(s.patron||"")}" onchange="lSaveField('${s.id}','patron',this.value)"></label>
-    </div>
-
-    <div class="card">
-      <h3 style="font-size:13px;color:var(--sea);margin-bottom:10px">⚓ Operación en muelle</h3>
-      <div class="grid two" style="gap:8px">
-        <label style="margin:0;font-size:12px">Salida muelle — Fecha<input type="date" value="${h((s.salidaMuelle||"").slice(0,10))}" onchange="lSaveMuelleField('${s.id}','date',this.value)"></label>
-        <label style="margin:0;font-size:12px">Salida muelle — Hora<input type="time" value="${h((s.salidaMuelle||"").slice(11,16))}" onchange="lSaveMuelleField('${s.id}','time',this.value)"></label>
-        <label style="margin:0;font-size:12px">Abarloado — Fecha<input type="date" value="${h((s.salidaAbarloado||"").slice(0,10))}" onchange="lSaveAbarloField('${s.id}','date',this.value)"></label>
-        <label style="margin:0;font-size:12px">Abarloado — Hora<input type="time" value="${h((s.salidaAbarloado||"").slice(11,16))}" onchange="lSaveAbarloField('${s.id}','time',this.value)"></label>
-      </div>
-      ${s.salidaMuelle?`<div class="alert" style="margin-top:10px;font-size:12px">🟢 En servicio desde ${h(s.salidaMuelle)}</div>`:""}
-    </div>
-
-    <div class="card">
-      <h3 style="font-size:13px;color:var(--sea);margin-bottom:10px">⚡ Acciones</h3>
-      <div style="display:flex;flex-direction:column;gap:8px">${actionBtns}</div>
+        <strong>${h(f.name)}</strong> · ${h(f.base)}<br>Cap: ${f.pallets} pallets · ${f.pax} pax · Patron base: ${h(f.patron)}</div>`:""}
+      <label style="font-size:12px;margin-top:10px">Patron asignado<input value="${h(s.patron||"")}" onchange="lSaveField('${s.id}','patron',this.value)"></label>
     </div>
   </div>
 
   <div class="card" style="margin-top:12px">
-    <h3 style="font-size:13px;color:var(--sea);margin-bottom:8px">📄 Albarán</h3>
+    <h3 style="font-size:13px;color:var(--sea);margin-bottom:8px">⚡ Acciones</h3>
+    <div style="display:flex;flex-direction:column;gap:8px">${actionBtns}</div>
+  </div>
+
+  ${lServiceCaseOcr(s.id)}
+
+  <div class="card" style="margin-top:12px">
+    <h3 style="font-size:13px;color:var(--sea);margin-bottom:8px">📄 Albaran</h3>
     ${s.albaran&&s.albaran.uploaded
       ?`<div class="grid two"><div><p><strong>Firmado por:</strong> ${h(s.albaran.signedBy)}</p><p><strong>Horas:</strong> ${h(s.albaran.hours)}</p></div><div class="alert">${h(s.albaran.ocrText)}</div></div>`
-      :'<div class="empty">Pendiente de cargar albarán OCR.</div>'}
+      :'<div class="empty">Pendiente de cargar albaran OCR.</div>'}
   </div>
 
   <div class="card" style="margin-top:12px">
