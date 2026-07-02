@@ -1,4 +1,4 @@
-<!-- v20260702011308 -->
+<!-- v20260702011903 -->
 <!-- cache-bust:2026-07-01T13:54:52.682318+00:00 -->
 <!doctype html>
 <html lang="es">
@@ -2264,23 +2264,7 @@ function lDateClass(s){
   return"";
 }
 function lPortOrder(){return[["algeciras","Algeciras","Terminales, fondeos y operativa principal"],["huelva","Huelva","Puerto Exterior, muelles y servicios de apoyo"],["all","Ambos puertos","Vista global Algeciras + Huelva"]]}
-const lNormalizeOpsBase=lNormalize;
-lNormalize=function(){
-  lNormalizeOpsBase();
-  lEnsureLanchasOpsCss();
-  if(!["huelva","all","algeciras"].includes(lState.port))lState.port="huelva";
-  lState.recordFilters=lState.recordFilters||{eta:"",vessel:"",client:"",port:"all",status:"all"};
-  lState.services.forEach(s=>{
-    s.departDockTime=s.departDockTime||s.time||"";
-    s.alongsideTime=s.alongsideTime||s.pickupTime||s.time||"";
-    s.unberthTime=s.unberthTime||"";
-    s.arrivalDockTime=s.arrivalDockTime||"";
-    s.additionalInfo=s.additionalInfo||"";
-    s.minHours=s.minHours||2;
-    s.billableHours=s.billableHours||Math.max(Number(s.minHours)||0,Number(s.duration)||0)||s.minHours;
-    s.port=s.port||lState.port||"huelva";
-  });
-}
+/* lNormalizeOpsBase alias removed */
 lPortChooser=function(){
   return`<div class="port-switch">${lPortOrder().map(([id,name,desc])=>`<button class="port-card ${lState.port===id?"active":""}" data-l-action="set-port" data-port="${id}"><strong>${name}</strong><span>${desc}</span><span class="badge ${lState.port===id?"confirmed":"quoted"}">${lState.port===id?"Puerto activo":"Elegir puerto"}</span></button>`).join("")}</div>`;
 }
