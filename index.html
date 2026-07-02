@@ -1,4 +1,4 @@
-<!-- v20260702011937 -->
+<!-- v20260702012759 -->
 <!-- cache-bust:2026-07-01T13:54:52.682318+00:00 -->
 <!doctype html>
 <html lang="es">
@@ -2140,9 +2140,8 @@ function lSaveMuelleField(id,part,value){
   const cur=s.salidaMuelle||"";
   const d=cur.slice(0,10)||value,t=cur.slice(11,16)||"00:00";
   s.salidaMuelle=part==="date"?(value+"T"+t):(d+"T"+value);
-  // Auto-set status to "progress" when salida muelle is set
   if(s.salidaMuelle&&s.status==="assigned"){s.status="progress";s.log=s.log||[];s.log.push("En servicio — Salida a muelle: "+s.salidaMuelle);}
-  lSave();lServiceDetail(id);
+  lSave();
 }
 
 function lSaveAbarloField(id,part,value){
@@ -2414,11 +2413,7 @@ lRecordsView=function(){
   const f=lState.recordFilters,sts=["all","completed","cancelled","pending","assigned","progress"],rows=lRecordRows();
   return`<div class="panel"><div class="section"><div><h3>Registros</h3><p>Historico con filtros por ETA, buque, cliente, puerto y estado. Cancelados se mantienen aqui.</p></div></div><div class="record-filters"><label>Buscar ETA<input data-l-record-filter="eta" value="${h(f.eta||"")}" placeholder="27/05/26 o 2026-05"></label><label>Buque<input data-l-record-filter="vessel" value="${h(f.vessel||"")}"></label><label>Cliente<input data-l-record-filter="client" value="${h(f.client||"")}"></label><label>Puerto<select data-l-record-filter="port"><option value="all" ${f.port==="all"?"selected":""}>Todos</option>${lPortOrder().map(([id,name])=>`<option value="${id}" ${f.port===id?"selected":""}>${name}</option>`).join("")}</select></label><label>Estado<select data-l-record-filter="status">${sts.map(s=>`<option value="${s}" ${f.status===s?"selected":""}>${s==="all"?"Todos":lStatusLabel(s)}</option>`).join("")}</select></label></div>${lServiceTable(rows)}</div>`;
 }
-lServiceDetail=function(id){
-  lNormalize();
-  const s=lState.services.find(x=>x.id===id);if(!s)return;
-  lServiceDetail(s.id);
-}
+/* lServiceDetail: see definition above */
 function lApplyRecordFilter(el){
   const key=el.dataset.lRecordFilter;if(!key)return;
   lState.recordFilters=lState.recordFilters||{eta:"",vessel:"",client:"",port:"all",status:"all"};
