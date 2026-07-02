@@ -1,4 +1,4 @@
-<!-- v20260702010930 -->
+<!-- v20260702011308 -->
 <!-- cache-bust:2026-07-01T13:54:52.682318+00:00 -->
 <!doctype html>
 <html lang="es">
@@ -2536,12 +2536,7 @@ lPizarraHero=function(){
   return`<div class="board-panel"><div class="board-head"><div><h3>Pizarra operativa</h3><p>Tabla tipo Excel para coordinar servicios de lancha, fechas, patron, grua, observaciones y contabilidad.</p></div><button class="btn primary" data-l-nav="pizarras">Abrir pizarra</button></div><div class="board-kpis"><div class="board-kpi"><strong>${rows.length}</strong><span class="muted">lineas</span></div><div class="board-kpi"><strong>${pending}</strong><span class="muted">por realizar</span></div><div class="board-kpi"><strong>${ok}</strong><span class="muted">OK</span></div><div class="board-kpi"><strong>${crane}</strong><span class="muted">requieren grua</span></div></div><div style="margin-top:12px">${lPizarraTable(rows.slice(0,8))}</div></div>`;
 }
 /* lPizarrasView: unified view defined above */
-const lNormalizePizarraBase=lNormalize;
-lNormalize=function(){
-  const requested=lState.current;
-  lNormalizePizarraBase();
-  if(["pizarras","fleet","calendar","records","clients","albaranes"].includes(requested))lState.current=requested;
-}
+/* lNormalizePizarraBase alias removed — see lNormalize definition above */
 renderLNav=function(){
   lNormalize();
   const items=[["dashboard","Dashboard","DB"],["pizarras","Pizarras","PZ"],["fleet","Flota","FL"],["calendar","Calendario","CA"],["records","Registros","RG"],["clients","Clientes","CL"]];
