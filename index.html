@@ -1,4 +1,4 @@
-<!-- v20260714170700 -->
+<!-- v20260714173814 -->
 <!-- cache-bust:2026-07-01T13:54:52.682318+00:00 -->
 <!doctype html>
 <html lang="es">
@@ -2662,24 +2662,273 @@ function agRenderRegistro(){
 
 // ── MOTORES ──
 const agMotorData={
-  clientes:[["MSC Mediterranean","Credito 30 dias · Acuerdo marco 2025"],["Atlantic Bulk Carriers","Credito 15 dias · Tarifa graneles negociada"],["Cepsa Marine Fuels","Pago anticipado · Bunkers"]],
-  proveedores:[["Despachante Aeropuerto Sevilla","spares@despachosvq.es"],["Almacen Huelva Port Logistics","almacen@hplog.es"],["Broker Aduanas Huelva","aduanas@brokerhuelva.es"]],
-  terceros:[["Autoridad Portuaria de Huelva","Tasas y atraques"],["Terminal Graneles Solidos","Muelle Sur"],["Terminal Norte — TQH","Muelle Norte"]],
-  tarifas:[["Tasa de buque — Puerto de Huelva","segun GT"],["Practicaje","segun GT/maniobra"],["Remolcadores","segun GT / num remolcadores"]],
-};
+  clientes:[
+    {id:"c1",nombre:"MSC Mediterranean",email:"ops@msc-med.es",contacto:"Carlos Ruiz",telefono:"+34 91 444 2200",credito:"30 dias",condiciones:[{concepto:"Descuento crew change",valor:"5%"},{concepto:"Tarifa preferente spares",valor:"EUR 180/envio"}],notas:"Cliente preferente — acuerdo marco 2025"},
+    {id:"c2",nombre:"Atlantic Bulk Carriers",email:"huelva@atlanticbulk.com",contacto:"Ana Ferreira",telefono:"+351 21 830 1100",credito:"15 dias",condiciones:[{concepto:"Tarifa graneles negociada",valor:"EUR 0.12/TN"}],notas:""},
+    {id:"c3",nombre:"Cepsa Marine Fuels",email:"marine@cepsa.com",contacto:"Pedro Iglesias",telefono:"+34 95 910 0000",credito:"Pago anticipado",condiciones:[],notas:"Bunkers STS — requiere ETA 72h antes"},
+    {id:"c4",nombre:"CMA CGM",email:"huelva@cma-cgm.com",contacto:"Lola Duran",telefono:"+34 91 570 0000",credito:"30 dias",condiciones:[{concepto:"Comision agencia reducida",valor:"10% descuento"}],notas:""},
+    {id:"c5",nombre:"Nordic Lines",email:"ops@nordiclines.no",contacto:"Erik Hansen",telefono:"+47 22 000 000",credito:"21 dias",condiciones:[],notas:""},
+  ],
+  proveedores:[
+    {id:"p1",nombre:"Despachante Aeropuerto Sevilla",email:"spares@despachosvq.es",contacto:"Jose Limon",telefono:"+34 95 440 0000",categoria:"Aduanas y spares",notas:""},
+    {id:"p2",nombre:"Almacen Huelva Port Logistics",email:"almacen@hplog.es",contacto:"Ramon Cuesta",telefono:"+34 95 921 0000",categoria:"Logistica y almacen",notas:""},
+    {id:"p3",nombre:"Broker Aduanas Huelva",email:"aduanas@brokerhuelva.es",contacto:"Pilar Vega",telefono:"+34 95 922 0000",categoria:"Aduanas",notas:""},
+    {id:"p4",nombre:"Transportes Onuba",email:"ops@transportesonuba.es",contacto:"Luis Mora",telefono:"+34 95 923 0000",categoria:"Transporte",notas:""},
+    {id:"p5",nombre:"Hotel Luz Huelva",email:"reservas@hotelluz.es",contacto:"Recepcion",telefono:"+34 95 925 0000",categoria:"Alojamiento tripulantes",notas:"Tarifa convenio EUR 89/noche"},
+  ],
+  terceros:[
+    {id:"t1",nombre:"Autoridad Portuaria de Huelva",email:"operaciones@aphu.es",contacto:"Area Operaciones",telefono:"+34 95 924 0000",rol:"Tasas y atraques",notas:""},
+    {id:"t2",nombre:"Terminal Graneles Solidos",email:"ops@tgs-huelva.es",contacto:"Turno Operativo",telefono:"+34 95 926 0000",rol:"Muelle Sur",notas:""},
+    {id:"t3",nombre:"Terminal Norte TQH",email:"ops@tqh.es",contacto:"Control",telefono:"+34 95 927 0000",rol:"Muelle Norte",notas:""},
+    {id:"t4",nombre:"Practicaje Puerto de Huelva",email:"practicaje@aphu.es",contacto:"Despacho",telefono:"+34 95 924 1000",rol:"Practicaje y remolque",notas:""},
+  ],
+  tarifas:[
+    {id:"ta1",concepto:"Tasa de buque — Puerto de Huelva",base:"Segun GT del buque",tarifa:"Tabla APH vigente",tipo:"Puerto",notas:"Se actualiza anualmente"},
+    {id:"ta2",concepto:"Practicaje",base:"GT / maniobra",tarifa:"Tabla APH vigente",tipo:"Puerto",notas:""},
+    {id:"ta3",concepto:"Amarre / desamarre",base:"Tarifa fija por escala",tarifa:"EUR 420 / escala",tipo:"Puerto",notas:""},
+    {id:"ta4",concepto:"Honorarios agencia Husbandry",base:"Por escala",tarifa:"EUR 850 - 1.800",tipo:"Agencia",notas:"Segun GT y servicios"},
+    {id:"ta5",concepto:"Honorarios agencia Comercial",base:"Por escala",tarifa:"EUR 1.200 - 3.500",tipo:"Agencia",notas:"Segun carga y servicios"},
+    {id:"ta6",concepto:"Gestion crew change",base:"Por tripulante",tarifa:"EUR 45 / pax",tipo:"Servicio",notas:"Incluye coordinacion taxi y hotel"},
+    {id:"ta7",concepto:"Spare parts handling",base:"Por envio",tarifa:"EUR 200 / envio",tipo:"Servicio",notas:""},
+  ],
+};;;
 const agMotorTitle={clientes:"Motor de clientes",proveedores:"Motor de proveedores",terceros:"Motor de terceros",tarifas:"Motor de tarifas portuarias"};
 
 function agRenderMotor(key){
-  var items=agMotorData[key]||[];
-  var cards=items.map(function(i){
-    return "<div class='card' style='padding:14px 16px'>"
-      +"<div style='font-weight:700;font-size:14px'>"+agH(i[0])+"</div>"
-      +"<div class='muted' style='font-size:11px;margin-top:3px'>"+agH(i[1])+"</div></div>";
-  }).join("");
+  // Only called for 'mantenedores' now
+  var tab=agState.motorTab||'clientes';
+  var tabs=[['clientes','Clientes','CL'],['proveedores','Proveedores','PV'],['terceros','Terceros','TC'],['tarifas','Tarifas','TA']];
+  var tabNav=tabs.map(function(t){
+    return "<button class='ag-tab "+(tab===t[0]?'active':'')+"' data-agtab='motor:"+t[0]+"'>"+t[1]+"</button>";
+  }).join('');
+
+  var content='';
+  if(tab==='clientes') content=agRenderClientes();
+  else if(tab==='proveedores') content=agRenderProveedores();
+  else if(tab==='terceros') content=agRenderTerceros();
+  else if(tab==='tarifas') content=agRenderTarifas();
+
   return "<div class='panel'>"
-    +"<div class='section'><div><h3>"+agH(agMotorTitle[key]||key)+"</h3></div>"
-    +"<button class='btn' disabled>+ Nuevo registro</button></div>"
-    +"<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px'>"+cards+"</div></div>";
+    +"<div class='section'><div><h3>Mantenedores</h3>"
+    +"<p class='muted'>Clientes, proveedores, terceros y tarifas. Clic en una ficha para editar.</p></div></div>"
+    +"<div style='display:flex;gap:0;border-bottom:1px solid var(--line);margin:0 -24px;padding:0 24px 0'>"+tabNav+"</div>"
+    +"<div style='margin-top:16px'>"+content+"</div>"
+    +"</div>";
+}
+
+function agRenderClientes(){
+  var items=agMotorData.clientes;
+  var cards=items.map(function(c){
+    var conds=c.condiciones&&c.condiciones.length
+      ?c.condiciones.map(function(x){return "<span style='background:#e8f4fd;color:#087ea4;border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace'>"+agH(x.concepto)+": "+agH(x.valor)+"</span>";}).join(' ')
+      :"<span style='color:var(--muted);font-size:11px'>Sin condiciones especiales</span>";
+    return "<div class='card' style='padding:16px;position:relative' data-agcardid='"+agH(c.id)+"' data-agcardtype='clientes'>"
+      +"<div style='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px'>"
+      +"<div><h3 style='margin:0 0 2px;font-size:16px'>"+agH(c.nombre)+"</h3>"
+      +"<p style='margin:0;font-size:11px;color:var(--muted);font-family:monospace'>"+agH(c.credito)+"</p></div>"
+      +"<div style='display:flex;gap:6px'>"
+      +"<button class='btn' style='font-size:11px;padding:4px 10px' data-agaction='editCard' data-agcardid='"+agH(c.id)+"' data-agcardtype='clientes'>✏️ Editar</button>"
+      +"<button class='btn red' style='font-size:11px;padding:4px 10px' data-agaction='deleteCard' data-agcardid='"+agH(c.id)+"' data-agcardtype='clientes'>🗑</button>"
+      +"</div></div>"
+      +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;font-size:12px;margin-bottom:10px'>"
+      +"<div><span style='color:var(--muted);font-size:10px;font-family:monospace'>CONTACTO</span><br><strong>"+agH(c.contacto)+"</strong></div>"
+      +"<div><span style='color:var(--muted);font-size:10px;font-family:monospace'>TELEFONO</span><br><strong>"+agH(c.telefono)+"</strong></div>"
+      +"<div><span style='color:var(--muted);font-size:10px;font-family:monospace'>EMAIL</span><br><strong>"+agH(c.email)+"</strong></div>"
+      +"<div><span style='color:var(--muted);font-size:10px;font-family:monospace'>CREDITO</span><br><strong>"+agH(c.credito)+"</strong></div>"
+      +"</div>"
+      +"<div style='margin-bottom:8px'><p style='margin:0 0 4px;font-size:10px;color:var(--muted);font-family:monospace;letter-spacing:.06em'>CONDICIONES ESPECIALES</p>"
+      +"<div style='display:flex;gap:6px;flex-wrap:wrap'>"+conds+"</div></div>"
+      +(c.notas?"<p style='margin:0;font-size:11px;color:var(--muted);font-style:italic'>"+agH(c.notas)+"</p>":"")
+      +"</div>";
+  }).join('');
+  return "<div style='display:flex;justify-content:flex-end;margin-bottom:12px'>"
+    +"<button class='btn primary' data-agaction='newCard' data-agcardtype='clientes'>+ Nuevo cliente</button></div>"
+    +"<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:14px'>"+cards+"</div>";
+}
+
+function agRenderProveedores(){
+  var items=agMotorData.proveedores;
+  var cards=items.map(function(p){
+    return "<div class='card' style='padding:16px'>"
+      +"<div style='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px'>"
+      +"<div><h3 style='margin:0 0 2px;font-size:15px'>"+agH(p.nombre)+"</h3>"
+      +"<span style='background:#f4f8fa;border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;color:var(--sea)'>"+agH(p.categoria)+"</span></div>"
+      +"<div style='display:flex;gap:6px'>"
+      +"<button class='btn' style='font-size:11px;padding:4px 10px' data-agaction='editCard' data-agcardid='"+agH(p.id)+"' data-agcardtype='proveedores'>✏️ Editar</button>"
+      +"<button class='btn red' style='font-size:11px;padding:4px 10px' data-agaction='deleteCard' data-agcardid='"+agH(p.id)+"' data-agcardtype='proveedores'>🗑</button>"
+      +"</div></div>"
+      +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;font-size:12px'>"
+      +"<div><span style='color:var(--muted);font-size:10px;font-family:monospace'>CONTACTO</span><br><strong>"+agH(p.contacto)+"</strong></div>"
+      +"<div><span style='color:var(--muted);font-size:10px;font-family:monospace'>TELEFONO</span><br><strong>"+agH(p.telefono)+"</strong></div>"
+      +"<div style='grid-column:span 2'><span style='color:var(--muted);font-size:10px;font-family:monospace'>EMAIL</span><br><strong>"+agH(p.email)+"</strong></div>"
+      +"</div>"
+      +(p.notas?"<p style='margin:8px 0 0;font-size:11px;color:var(--muted);font-style:italic'>"+agH(p.notas)+"</p>":"")
+      +"</div>";
+  }).join('');
+  return "<div style='display:flex;justify-content:flex-end;margin-bottom:12px'>"
+    +"<button class='btn primary' data-agaction='newCard' data-agcardtype='proveedores'>+ Nuevo proveedor</button></div>"
+    +"<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px'>"+cards+"</div>";
+}
+
+function agRenderTerceros(){
+  var items=agMotorData.terceros;
+  var cards=items.map(function(t){
+    return "<div class='card' style='padding:16px'>"
+      +"<div style='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px'>"
+      +"<div><h3 style='margin:0 0 2px;font-size:15px'>"+agH(t.nombre)+"</h3>"
+      +"<span style='background:#f4f8fa;border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;color:var(--sea)'>"+agH(t.rol)+"</span></div>"
+      +"<div style='display:flex;gap:6px'>"
+      +"<button class='btn' style='font-size:11px;padding:4px 10px' data-agaction='editCard' data-agcardid='"+agH(t.id)+"' data-agcardtype='terceros'>✏️ Editar</button>"
+      +"<button class='btn red' style='font-size:11px;padding:4px 10px' data-agaction='deleteCard' data-agcardid='"+agH(t.id)+"' data-agcardtype='terceros'>🗑</button>"
+      +"</div></div>"
+      +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;font-size:12px'>"
+      +"<div><span style='color:var(--muted);font-size:10px;font-family:monospace'>CONTACTO</span><br><strong>"+agH(t.contacto)+"</strong></div>"
+      +"<div><span style='color:var(--muted);font-size:10px;font-family:monospace'>TELEFONO</span><br><strong>"+agH(t.telefono)+"</strong></div>"
+      +"<div style='grid-column:span 2'><span style='color:var(--muted);font-size:10px;font-family:monospace'>EMAIL</span><br><strong>"+agH(t.email)+"</strong></div>"
+      +"</div>"
+      +(t.notas?"<p style='margin:8px 0 0;font-size:11px;color:var(--muted);font-style:italic'>"+agH(t.notas)+"</p>":"")
+      +"</div>";
+  }).join('');
+  return "<div style='display:flex;justify-content:flex-end;margin-bottom:12px'>"
+    +"<button class='btn primary' data-agaction='newCard' data-agcardtype='terceros'>+ Nuevo tercero</button></div>"
+    +"<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px'>"+cards+"</div>";
+}
+
+function agRenderTarifas(){
+  var items=agMotorData.tarifas;
+  var tipoColor={'Puerto':'#e8f4fd','Agencia':'#e8f8ef','Servicio':'#fff7e8'};
+  var tipoText={'Puerto':'#087ea4','Agencia':'#10b981','Servicio':'#f59e0b'};
+  var cards=items.map(function(t){
+    var bg=tipoColor[t.tipo]||'#f4f8fa';var tc=tipoText[t.tipo]||'#6b7280';
+    return "<div class='card' style='padding:16px'>"
+      +"<div style='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px'>"
+      +"<div><span style='background:"+bg+";color:"+tc+";border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace'>"+agH(t.tipo)+"</span>"
+      +"<h3 style='margin:4px 0 0;font-size:14px'>"+agH(t.concepto)+"</h3></div>"
+      +"<div style='display:flex;gap:6px'>"
+      +"<button class='btn' style='font-size:11px;padding:4px 10px' data-agaction='editCard' data-agcardid='"+agH(t.id)+"' data-agcardtype='tarifas'>✏️ Editar</button>"
+      +"<button class='btn red' style='font-size:11px;padding:4px 10px' data-agaction='deleteCard' data-agcardid='"+agH(t.id)+"' data-agcardtype='tarifas'>🗑</button>"
+      +"</div></div>"
+      +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;font-size:12px'>"
+      +"<div><span style='color:var(--muted);font-size:10px;font-family:monospace'>BASE DE CALCULO</span><br><strong>"+agH(t.base)+"</strong></div>"
+      +"<div><span style='color:var(--muted);font-size:10px;font-family:monospace'>TARIFA</span><br><strong style='color:var(--navy)'>"+agH(t.tarifa)+"</strong></div>"
+      +"</div>"
+      +(t.notas?"<p style='margin:8px 0 0;font-size:11px;color:var(--muted);font-style:italic'>"+agH(t.notas)+"</p>":"")
+      +"</div>";
+  }).join('');
+  return "<div style='display:flex;justify-content:flex-end;margin-bottom:12px'>"
+    +"<button class='btn primary' data-agaction='newCard' data-agcardtype='tarifas'>+ Nueva tarifa</button></div>"
+    +"<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px'>"+cards+"</div>";
+}
+
+function agOpenCardModal(type, id){
+  var isNew=!id;
+  var data=null;
+  if(!isNew) data=(agMotorData[type]||[]).find(function(x){return x.id===id;});
+  var d=data||{};
+  var body='';
+  if(type==='clientes'){
+    var condsHtml=(d.condiciones||[]).map(function(c,i){
+      return "<div style='display:flex;gap:6px;align-items:center;margin-bottom:6px' data-agcondidx='"+i+"'>"
+        +"<input placeholder='Concepto' value='"+agH(c.concepto||'')+"' style='flex:1;padding:7px;border:1px solid var(--line);border-radius:5px;font-size:12px'>"
+        +"<input placeholder='Valor' value='"+agH(c.valor||'')+"' style='width:120px;padding:7px;border:1px solid var(--line);border-radius:5px;font-size:12px'>"
+        +"<button data-agaction='removeCondicion' data-agcondidx='"+i+"' style='border:none;background:none;color:#ef4444;font-size:16px;cursor:pointer;padding:0 4px'>×</button>"
+        +"</div>";
+    }).join('');
+    body="<div style='display:grid;grid-template-columns:1fr 1fr;gap:10px'>"
+      +"<label style='font-size:12px;grid-column:span 2'>Nombre cliente<input id='agF_nombre' value='"+agH(d.nombre||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px'>Contacto<input id='agF_contacto' value='"+agH(d.contacto||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px'>Telefono<input id='agF_telefono' value='"+agH(d.telefono||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px;grid-column:span 2'>Email<input id='agF_email' value='"+agH(d.email||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px;grid-column:span 2'>Credito / Condicion de pago<input id='agF_credito' value='"+agH(d.credito||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"</div>"
+      +"<div style='margin-top:12px'>"
+      +"<p style='font-size:12px;font-weight:700;margin-bottom:8px;color:var(--sea)'>Condiciones especiales</p>"
+      +"<div id='agCondicionesWrap'>"+condsHtml+"</div>"
+      +"<button data-agaction='addCondicion' style='font-size:11px;border:1px dashed var(--line);background:none;padding:6px 12px;border-radius:5px;cursor:pointer;margin-top:4px'>+ Agregar condicion</button>"
+      +"</div>"
+      +"<label style='font-size:12px;display:block;margin-top:10px'>Notas<textarea id='agF_notas' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px;min-height:60px'>"+agH(d.notas||'')+"</textarea></label>";
+  } else if(type==='proveedores'){
+    body="<div style='display:grid;grid-template-columns:1fr 1fr;gap:10px'>"
+      +"<label style='font-size:12px;grid-column:span 2'>Nombre<input id='agF_nombre' value='"+agH(d.nombre||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px'>Contacto<input id='agF_contacto' value='"+agH(d.contacto||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px'>Telefono<input id='agF_telefono' value='"+agH(d.telefono||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px;grid-column:span 2'>Email<input id='agF_email' value='"+agH(d.email||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px;grid-column:span 2'>Categoria<input id='agF_categoria' value='"+agH(d.categoria||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px;grid-column:span 2'>Notas<textarea id='agF_notas' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px;min-height:60px'>"+agH(d.notas||'')+"</textarea></label>"
+      +"</div>";
+  } else if(type==='terceros'){
+    body="<div style='display:grid;grid-template-columns:1fr 1fr;gap:10px'>"
+      +"<label style='font-size:12px;grid-column:span 2'>Nombre<input id='agF_nombre' value='"+agH(d.nombre||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px'>Contacto<input id='agF_contacto' value='"+agH(d.contacto||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px'>Telefono<input id='agF_telefono' value='"+agH(d.telefono||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px;grid-column:span 2'>Email<input id='agF_email' value='"+agH(d.email||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px;grid-column:span 2'>Rol<input id='agF_rol' value='"+agH(d.rol||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px;grid-column:span 2'>Notas<textarea id='agF_notas' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px;min-height:60px'>"+agH(d.notas||'')+"</textarea></label>"
+      +"</div>";
+  } else if(type==='tarifas'){
+    body="<div style='display:grid;grid-template-columns:1fr 1fr;gap:10px'>"
+      +"<label style='font-size:12px;grid-column:span 2'>Concepto<input id='agF_concepto' value='"+agH(d.concepto||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px'>Base de calculo<input id='agF_base' value='"+agH(d.base||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px'>Tarifa<input id='agF_tarifa' value='"+agH(d.tarifa||'')+"' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
+      +"<label style='font-size:12px'>Tipo<select id='agF_tipo' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'>"
+      +"<option "+(d.tipo==='Puerto'?'selected':'')+" >Puerto</option>"
+      +"<option "+(d.tipo==='Agencia'?'selected':'')+" >Agencia</option>"
+      +"<option "+(d.tipo==='Servicio'?'selected':'')+" >Servicio</option>"
+      +"</select></label>"
+      +"<label style='font-size:12px;grid-column:span 2'>Notas<textarea id='agF_notas' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px;min-height:60px'>"+agH(d.notas||'')+"</textarea></label>"
+      +"</div>";
+  }
+  var inner=ag$('#agModal');var modal=ag$('#agModalBg');
+  if(!inner||!modal)return;
+  inner.innerHTML="<div class='section'><div><h3>"+(isNew?'Nuevo ':'Editar ')+agH({clientes:'cliente',proveedores:'proveedor',terceros:'tercero',tarifas:'tarifa'}[type]||type)+"</h3></div>"
+    +"<button class='btn' data-agaction='closeModal'>X</button></div>"
+    +"<div style='padding:0 24px 8px'>"+body+"</div>"
+    +"<div class='toolbar' style='padding:12px 24px 16px;justify-content:flex-end;border-top:1px solid var(--line)'>"
+    +"<button class='btn' data-agaction='closeModal'>Cancelar</button>"
+    +"<button class='btn primary' data-agaction='saveCard' data-agcardtype='"+type+"' data-agcardid='"+(id||'')+"'>Guardar</button>"
+    +"</div>";
+  // Store editing context for condiciones
+  inner.dataset.agtype=type;
+  inner.dataset.agid=id||'';
+  inner.dataset.agcondiciones=JSON.stringify(d.condiciones||[]);
+  modal.classList.add('open');
+}
+
+function agSaveCard(type,id){
+  var isNew=!id;
+  var arr=agMotorData[type];
+  if(!arr)return;
+  var existing=isNew?null:arr.find(function(x){return x.id===id;});
+  var g=function(sel){var el=ag$(sel);return el?el.value.trim():'';};
+  if(type==='clientes'){
+    var conds=JSON.parse(ag$('#agModal').dataset.agcondiciones||'[]');
+    // Read current condiciones from DOM
+    var condRows=ag$('#agCondicionesWrap')?(ag$('#agCondicionesWrap').querySelectorAll('[data-agcondidx]')||[]):[];
+    var newConds=[];
+    condRows.forEach(function(row){
+      var inputs=row.querySelectorAll('input');
+      if(inputs[0]&&inputs[0].value.trim())newConds.push({concepto:inputs[0].value.trim(),valor:inputs[1]?inputs[1].value.trim():''});
+    });
+    var obj={id:id||('c'+Date.now()),nombre:g('#agF_nombre'),email:g('#agF_email'),contacto:g('#agF_contacto'),telefono:g('#agF_telefono'),credito:g('#agF_credito'),condiciones:newConds,notas:g('#agF_notas')};
+    if(isNew)arr.push(obj);else Object.assign(existing,obj);
+  } else if(type==='proveedores'){
+    var obj={id:id||('p'+Date.now()),nombre:g('#agF_nombre'),email:g('#agF_email'),contacto:g('#agF_contacto'),telefono:g('#agF_telefono'),categoria:g('#agF_categoria'),notas:g('#agF_notas')};
+    if(isNew)arr.push(obj);else Object.assign(existing,obj);
+  } else if(type==='terceros'){
+    var obj={id:id||('t'+Date.now()),nombre:g('#agF_nombre'),email:g('#agF_email'),contacto:g('#agF_contacto'),telefono:g('#agF_telefono'),rol:g('#agF_rol'),notas:g('#agF_notas')};
+    if(isNew)arr.push(obj);else Object.assign(existing,obj);
+  } else if(type==='tarifas'){
+    var tipoEl=ag$('#agF_tipo');
+    var obj={id:id||('ta'+Date.now()),concepto:g('#agF_concepto'),base:g('#agF_base'),tarifa:g('#agF_tarifa'),tipo:tipoEl?tipoEl.value:'Puerto',notas:g('#agF_notas')};
+    if(isNew)arr.push(obj);else Object.assign(existing,obj);
+  }
+  agCloseModal();renderAgencias();toast(isNew?'Registro creado.':'Cambios guardados.');
+}
+
+function agDeleteCard(type,id){
+  if(!confirm('¿Eliminar este registro?'))return;
+  agMotorData[type]=agMotorData[type].filter(function(x){return x.id!==id;});
+  renderAgencias();toast('Registro eliminado.');
 }
 
 // ── CLIENTES BLOCK ──
@@ -3007,15 +3256,19 @@ function agPreviewTemplate(name){
 var agNavItems=[
   ["pizarra","PIZARRA","PZ"],
   ["registro","REGISTRO OPS","RO"],
-  ["clientes","CLIENTES","CL"],
-  ["proveedores","PROVEEDORES","PV"],
-  ["terceros","TERCEROS","TC"],
-  ["tarifas","TARIFAS","TA"],
+  ["mantenedores","MANTENEDORES","MT"],
 ];
-function agGoto(view){agState.view=view;agState.openExp=null;agSave();renderAgencias();}
+function agGoto(view){agState.view=view;agState.openExp=null;if(view==='mantenedores'&&!agState.motorTab)agState.motorTab='clientes';agSave();renderAgencias();}
 function agSetFilter(f){agState.filter=f;agSave();renderAgencias();}
 function agOpenExp(num){agState.openExp=num;agState.openTab="datos";agSave();renderAgencias();}
-function agSetTab(t){agState.openTab=t;agSave();renderAgencias();}
+function agSetTab(t){
+  if(t.startsWith('motor:')){
+    agState.motorTab=t.slice(6);
+    agSave();renderAgencias();
+  } else {
+    agState.openTab=t;agSave();renderAgencias();
+  }
+}
 
 // ── MAIN RENDER ──
 function renderAgencias(){
@@ -3038,6 +3291,8 @@ function renderAgencias(){
     html2=agRenderPizarra();
   } else if(agState.view==="registro"){
     html2=agRenderRegistro();
+  } else if(agState.view==="mantenedores"){
+    html2=agRenderMotor('mantenedores');
   } else {
     html2=agRenderMotor(agState.view);
   }
@@ -3076,6 +3331,23 @@ function renderAgencias(){
         else if(act==='showOcrExtract'){var x=ag$('#agOcrExtract');if(x)x.classList.add('show');}
         else if(act==='closeApplyOcr'){agCloseModal();toast('Actualizacion aplicada al expediente.');}
         else if(act==='closeAndSend'){var n=el.dataset.agname||'';agCloseModal();toast('"'+n+'" enviado via Outlook.');}
+        else if(act==='editCard'){agOpenCardModal(el.dataset.agcardtype,el.dataset.agcardid);}
+        else if(act==='newCard'){agOpenCardModal(el.dataset.agcardtype,'');}
+        else if(act==='deleteCard'){agDeleteCard(el.dataset.agcardtype,el.dataset.agcardid);}
+        else if(act==='saveCard'){agSaveCard(el.dataset.agcardtype,el.dataset.agcardid);}
+        else if(act==='addCondicion'){
+          var w=ag$('#agCondicionesWrap');if(!w)return;
+          var idx=w.querySelectorAll('[data-agcondidx]').length;
+          var row=document.createElement('div');row.dataset.agcondidx=idx;
+          row.style='display:flex;gap:6px;align-items:center;margin-bottom:6px';
+          row.innerHTML="<input placeholder='Concepto' style='flex:1;padding:7px;border:1px solid var(--line);border-radius:5px;font-size:12px'>"
+            +"<input placeholder='Valor' style='width:120px;padding:7px;border:1px solid var(--line);border-radius:5px;font-size:12px'>"
+            +"<button data-agaction='removeCondicion' style='border:none;background:none;color:#ef4444;font-size:16px;cursor:pointer;padding:0 4px'>&#215;</button>";
+          w.appendChild(row);
+        }
+        else if(act==='removeCondicion'){
+          var row=el.closest('[data-agcondidx]');if(row)row.remove();
+        }
         return;
       }
     },true);
