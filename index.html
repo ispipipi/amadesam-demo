@@ -1,4 +1,4 @@
-<!-- v20260714173814 -->
+<!-- v20260714200410 -->
 <!-- cache-bust:2026-07-01T13:54:52.682318+00:00 -->
 <!doctype html>
 <html lang="es">
@@ -3159,6 +3159,10 @@ function agOpenModal(kind){
       +"<label style='font-size:12px'>Buque<input id='agFBuque2' value='CMA CGM ANDALUCIA' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
       +"<label style='font-size:12px'>Cliente<input id='agFCliente2' value='CMA CGM' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
       +"</div>"
+      +"<label style='font-size:12px;display:block;margin-top:10px'>Servicios estimados"
+      +"<textarea id='agFServ' rows='3' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px;font-size:12px'>Husbandry: crew change 2/2, provisiones, spare parts (1 bulto)</textarea>"
+      +"</label>"
+      +"<p style='font-size:11px;color:var(--muted);margin-top:6px;font-family:monospace'>El expediente se creara en estado TBC hasta confirmacion del cliente.</p>"
       +"<div class='toolbar' style='margin-top:14px;justify-content:flex-end'>"
       +"<button class='btn' data-agaction='closeModal'>Cancelar</button>"
       +"<button class='btn warn' data-agaction='confirmPda'>Crear expediente TBC</button>"
@@ -3208,7 +3212,7 @@ function agConfirmPda(){
     num:num,tbc:true,
     buque:buque.trim().toUpperCase(),
     tipo:"HUSBANDRY",eta:"~ por confirmar",etb:"-",etc:"-",
-    muelle:"Por confirmar",obs:"PDA enviada, pdte. confirmacion",
+    muelle:"Por confirmar",obs:(ag$('#agFServ')||{}).value||"PDA enviada, pdte. confirmacion",
     estado:"TBC",cliente:(ag$('#agFCliente2')||{}).value||"",clientesExtra:[]
   });
   agSave();agCloseModal();agGoto("pizarra");toast("Expediente TBC creado.");
