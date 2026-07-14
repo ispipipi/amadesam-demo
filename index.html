@@ -1,4 +1,4 @@
-<!-- v20260714124403 -->
+<!-- v20260714170700 -->
 <!-- cache-bust:2026-07-01T13:54:52.682318+00:00 -->
 <!doctype html>
 <html lang="es">
@@ -2610,11 +2610,11 @@ function agRenderPizarra(){
   });
   var pills=filters.map(function(f){
     var label=f==="TODOS"?"Todos":f==="TBC"?"TBC pendiente":(agTipoLabel[f]||f);
-    return "<button class='ag-pill "+(agState.filter===f?"active":"")+"' onclick='agSetFilter(\""+f+"\")'>"
+    return "<button class='ag-pill "+(agState.filter===f?"active":"")+"' data-agfilter='"+f+"'>"
       +agH(label)+"</button>";
   }).join("");
   var rows=list.map(function(e){
-    return "<div class='ag-board-row' onclick='agOpenExp(\""+agH(e.num)+"\")'>"
+    return "<div class='ag-board-row' data-agopen='"+agH(e.num)+"' style='cursor:pointer'>"
       +"<div class='ag-flap-num'>"+agH(e.num)+"</div>"
       +"<div><div class='ag-flap-buque'>"+agH(e.buque)+"</div><span class='ag-flap-sub'>"+agH(e.cliente)+"</span></div>"
       +"<div>"+agTipoTag(e.tipo)+"</div>"
@@ -2631,8 +2631,8 @@ function agRenderPizarra(){
     +"<div class='section'><div><h3>Pizarra de expedientes</h3>"
     +"<p class='muted'>Tablón operativo · Puerto de Huelva · "+list.length+" escala"+(list.length!==1?"s":"")+" activas</p></div>"
     +"<div class='toolbar'>"
-    +"<button class='btn' onclick='agOpenModal(\"alta\")'>+ Alta de buque (OCR)</button>"
-    +"<button class='btn primary' onclick='agOpenModal(\"pda\")'>+ Crear PDA (OCR)</button>"
+    +"<button class='btn' data-agmodal='alta'>+ Alta de buque (OCR)</button>"
+    +"<button class='btn primary' data-agmodal='pda'>+ Crear PDA (OCR)</button>"
     +"</div></div>"
     +"<div class='toolbar' style='margin-bottom:12px;gap:6px'>"+pills+"</div>"
     +"<div class='ag-board'>"
@@ -2645,7 +2645,7 @@ function agRenderPizarra(){
 function agRenderRegistro(){
   var list=agState.expedientes.filter(function(e){return e.estado==="FACTURADO";});
   var rows=list.map(function(e){
-    return "<div class='ag-board-row' onclick='agOpenExp(\""+agH(e.num)+"\")'>"
+    return "<div class='ag-board-row' data-agopen='"+agH(e.num)+"' style='cursor:pointer'>"
       +"<div class='ag-flap-num'>"+agH(e.num)+"</div>"
       +"<div><div class='ag-flap-buque'>"+agH(e.buque)+"</div><span class='ag-flap-sub'>"+agH(e.cliente)+"</span></div>"
       +"<div>"+agTipoTag(e.tipo)+"</div>"
@@ -2699,7 +2699,7 @@ function agClientesBlock(e){
     +"<h3 style='font-size:13px;color:var(--sea);margin-bottom:10px'>Entidades cliente del expediente</h3>"
     +"<div style='display:flex;gap:10px;flex-wrap:wrap;align-items:center'>"
     +chipHtml
-    +"<button class='btn' style='border-style:dashed;font-size:11px' onclick='agOpenModal(\"add-cliente\")'>+ Anadir entidad</button>"
+    +"<button class='btn' style='border-style:dashed;font-size:11px' data-agmodal='add-cliente'>+ Anadir entidad</button>"
     +"</div></div>";
 }
 
@@ -2796,7 +2796,7 @@ function agTabCrewing(){
     +"</table></div>"
     +"<div class='toolbar' style='margin-top:12px;flex-wrap:wrap'>"
     +["Solicitar taxi","Solicitar hotel","OKTB","Letter of Invitation","Docs VISA / Inmigracion"].map(function(t){
-      return "<button class='ag-tmpl-btn' onclick='agPreviewTemplate(\""+t+"\")'>&#x2709; "+agH(t)+"</button>";
+      return "<button class='ag-tmpl-btn' data-agtemplate='"+t+"'>&#x2709; "+agH(t)+"</button>";
     }).join("")
     +"</div>";
 }
@@ -2816,7 +2816,7 @@ function agTabLogistics(){
     +"</table></div>"
     +"<div class='toolbar' style='margin-top:12px;flex-wrap:wrap'>"
     +["Almacen Huelva","Broker Aduanas Huelva","Transportista Huelva","Courier / Forwarder"].map(function(t){
-      return "<button class='ag-tmpl-btn' onclick='agPreviewTemplate(\"Aviso a "+t+"\")'>&#x2709; "+agH(t)+"</button>";
+      return "<button class='ag-tmpl-btn' data-agtemplate='Aviso a "+t+"'>&#x2709; "+agH(t)+"</button>";
     }).join("")+"</div>";
 }
 
@@ -2837,9 +2837,9 @@ function agTabPda(){
     +"<tr><td style='padding:6px 8px'>Honorarios agencia</td><td>AMADESAM</td><td>&#8364; 4.500</td><td>&#8364; 4.500</td><td>&#8364; 0</td><td class='ag-done-cell'>&#x2713;</td></tr>"
     +"</tbody></table></div>"
     +"<div class='toolbar' style='margin-top:12px'>"
-    +"<button class='btn' onclick='agPreviewTemplate(\"PDA Cliente\")'>&#x2709; Enviar PDA al cliente</button>"
-    +"<button class='btn' onclick='agPreviewTemplate(\"FDA a facturacion\")'>&#x2709; Enviar FDA a facturacion</button>"
-    +"<button class='btn primary' onclick='agMarcarFacturado()'>Marcar como Facturado &#x2192;</button>"
+    +"<button class='btn' data-agtemplate='PDA Cliente'>&#x2709; Enviar PDA al cliente</button>"
+    +"<button class='btn' data-agtemplate='FDA a facturacion'>&#x2709; Enviar FDA a facturacion</button>"
+    +"<button class='btn primary' data-agaction='marcarFacturado'>Marcar como Facturado &#x2192;</button>"
     +"</div>";
 }
 
@@ -2849,7 +2849,7 @@ function agRenderExpediente(num){
   if(!e)return"<div class='panel'><p>Expediente no encontrado.</p></div>";
   var tabs=[["datos","Datos operativa"],["crewing","Crewing"],["logistics","Logistics"],["pda","PDA / FDA"]];
   var tabNav=tabs.map(function(t){
-    return "<button class='ag-tab "+(agState.openTab===t[0]?"active":"")+"' onclick='agSetTab(\""+t[0]+"\")'>"+agH(t[1])+"</button>";
+    return "<button class='ag-tab "+(agState.openTab===t[0]?"active":"")+"' data-agtab='"+t[0]+"'>"+agH(t[1])+"</button>";
   }).join("");
   var body="";
   if(agState.openTab==="datos")body=agTabDatos(e);
@@ -2858,10 +2858,10 @@ function agRenderExpediente(num){
   else if(agState.openTab==="pda")body=agTabPda();
 
   var tmplBtns=["Appointment Received","PDA Cliente","Daily Report","Service List"].map(function(t){
-    return "<button class='ag-tmpl-btn' onclick='agPreviewTemplate(\""+t+"\")'>&#x2709; "+agH(t)+"</button>";
+    return "<button class='ag-tmpl-btn' data-agtemplate='"+t+"'>&#x2709; "+agH(t)+"</button>";
   }).join("");
 
-  return "<div class='ag-breadcrumb'><a onclick='agGoto(\"pizarra\")'>Pizarra</a> &nbsp;/&nbsp; "+agH(e.num)+" &nbsp;/&nbsp; "+agH(agTipoLabel[e.tipo]||e.tipo)+"</div>"
+  return "<div class='ag-breadcrumb'><a data-aggoto='pizarra'>Pizarra</a> &nbsp;/&nbsp; "+agH(e.num)+" &nbsp;/&nbsp; "+agH(agTipoLabel[e.tipo]||e.tipo)+"</div>"
     +"<div class='panel'>"
     +"<div class='section'>"
     +"<div><p class='eyebrow'>"+agH(agTipoLabel[e.tipo])+" &middot; Puerto de Huelva</p>"
@@ -2876,7 +2876,7 @@ function agRenderExpediente(num){
     +"</div>"
     +"<div class='toolbar' style='flex-wrap:wrap;gap:6px'>"+tmplBtns+"</div>"
     +"</div>"
-    +"<button class='btn' onclick='agOpenModal(\"ocr-update\")'>&#x21BB; Actualizar via OCR</button>"
+    +"<button class='btn' data-agmodal='ocr-update'>&#x21BB; Actualizar via OCR</button>"
     +"</div>"
     +"<div style='display:flex;gap:0;border-bottom:1px solid var(--line);margin:0 -24px;padding:0 24px'>"+tabNav+"</div>"
     +"<div style='margin-top:16px'>"+body+"</div>"
@@ -2888,10 +2888,10 @@ function agOpenModal(kind){
   var modal=ag$('#agModalBg');var inner=ag$('#agModal');
   if(!modal||!inner)return;
   if(kind==="alta"){
-    inner.innerHTML="<div class='section'><div><h3>Alta de buque — Lectura OCR</h3></div><button class='btn' onclick='agCloseModal()'>X</button></div>"
+    inner.innerHTML="<div class='section'><div><h3>Alta de buque — Lectura OCR</h3></div><button class='btn' data-agaction='closeModal'>X</button></div>"
       +"<div class='ag-ocr-drop'><b>Arrastra el correo / PDF de nombramiento aqui</b><br>el OCR extraera buque, fechas, puerto y tipo de operacion</div>"
       +"<div class='ag-ocr-extract' id='agOcrExtract'>&#x2713; Datos extraidos: MSC ANDALUCIA · ETA 22/07 06:00 · Puerto Huelva · Crew change + spares &rarr; clasificado como <b>HUSBANDRY</b></div>"
-      +"<button class='btn' style='margin-bottom:12px' onclick='ag$(\"#agOcrExtract\").classList.add(\"show\")'>Simular lectura OCR</button>"
+      +"<button class='btn' style='margin-bottom:12px' data-agaction='showOcrExtract'>Simular lectura OCR</button>"
       +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:10px'>"
       +"<label style='font-size:12px'>Buque<input id='agFBuque' value='MSC ANDALUCIA' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
       +"<label style='font-size:12px'>Cliente<input id='agFCliente' value='MSC Mediterranean' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
@@ -2899,11 +2899,11 @@ function agOpenModal(kind){
       +"<label style='font-size:12px'>Tipo<select id='agFTipo' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'><option>HUSBANDRY</option><option>COMERCIAL</option><option>TECNICA</option></select></label>"
       +"</div>"
       +"<div class='toolbar' style='margin-top:14px;justify-content:flex-end'>"
-      +"<button class='btn' onclick='agCloseModal()'>Cancelar</button>"
-      +"<button class='btn primary' onclick='agConfirmAlta()'>Crear expediente</button>"
+      +"<button class='btn' data-agaction='closeModal'>Cancelar</button>"
+      +"<button class='btn primary' data-agaction='confirmAlta'>Crear expediente</button>"
       +"</div>";
   } else if(kind==="pda"){
-    inner.innerHTML="<div class='section'><div><h3>Crear PDA — Lectura OCR</h3></div><button class='btn' onclick='agCloseModal()'>X</button></div>"
+    inner.innerHTML="<div class='section'><div><h3>Crear PDA — Lectura OCR</h3></div><button class='btn' data-agaction='closeModal'>X</button></div>"
       +"<div class='ag-ocr-drop'><b>Carga la inquiry del cliente</b><br>el OCR extraera buque, puerto y servicios solicitados</div>"
       +"<div class='ag-ocr-extract show'>&#x2713; Inquiry leida: CMA CGM ANDALUCIA · Huelva · ETA ~22/07 · solicita PDA husbandry</div>"
       +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px'>"
@@ -2911,24 +2911,24 @@ function agOpenModal(kind){
       +"<label style='font-size:12px'>Cliente<input id='agFCliente2' value='CMA CGM' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
       +"</div>"
       +"<div class='toolbar' style='margin-top:14px;justify-content:flex-end'>"
-      +"<button class='btn' onclick='agCloseModal()'>Cancelar</button>"
-      +"<button class='btn warn' onclick='agConfirmPda()'>Crear expediente TBC</button>"
+      +"<button class='btn' data-agaction='closeModal'>Cancelar</button>"
+      +"<button class='btn warn' data-agaction='confirmPda'>Crear expediente TBC</button>"
       +"</div>";
   } else if(kind==="ocr-update"){
-    inner.innerHTML="<div class='section'><div><h3>Actualizacion via OCR</h3></div><button class='btn' onclick='agCloseModal()'>X</button></div>"
+    inner.innerHTML="<div class='section'><div><h3>Actualizacion via OCR</h3></div><button class='btn' data-agaction='closeModal'>X</button></div>"
       +"<div class='ag-ocr-drop'><b>Arrastra el correo de actualizacion</b><br>se detectaran cambios de horarios, servicios y nuevos requerimientos</div>"
       +"<div class='ag-ocr-extract show'>&#x2713; Detectado: ETB actualizado a las 09:30 · nueva linea en Spare Parts · 1 nuevo OFF SIGNER anadido a crewing</div>"
       +"<div class='toolbar' style='margin-top:14px;justify-content:flex-end'>"
-      +"<button class='btn' onclick='agCloseModal()'>Cancelar</button>"
-      +"<button class='btn primary' onclick='agCloseModal();toast(\"Actualizacion aplicada al expediente.\")'>Aplicar al expediente</button>"
+      +"<button class='btn' data-agaction='closeModal'>Cancelar</button>"
+      +"<button class='btn primary' data-agaction='closeApplyOcr'>Aplicar al expediente</button>"
       +"</div>";
   } else if(kind==="add-cliente"){
-    inner.innerHTML="<div class='section'><div><h3>Anadir entidad cliente</h3></div><button class='btn' onclick='agCloseModal()'>X</button></div>"
+    inner.innerHTML="<div class='section'><div><h3>Anadir entidad cliente</h3></div><button class='btn' data-agaction='closeModal'>X</button></div>"
       +"<label style='font-size:12px;display:block;margin-bottom:10px'>Nombre<input id='agFCliNombre' placeholder='Ej. Broker de carga S.L.' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'></label>"
       +"<label style='font-size:12px;display:block'>Rol<select id='agFCliRol' style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px'><option>Costes puerto</option><option>Costes armador</option><option>Pagador</option><option>Owners matters</option><option>Otro</option></select></label>"
       +"<div class='toolbar' style='margin-top:14px;justify-content:flex-end'>"
-      +"<button class='btn' onclick='agCloseModal()'>Cancelar</button>"
-      +"<button class='btn primary' onclick='agConfirmAddCliente()'>Anadir entidad</button>"
+      +"<button class='btn' data-agaction='closeModal'>Cancelar</button>"
+      +"<button class='btn primary' data-agaction='confirmAddCliente'>Anadir entidad</button>"
       +"</div>";
   }
   modal.classList.add('open');
@@ -2994,11 +2994,11 @@ function agPreviewTemplate(name){
   var text=raw.replace(/\{\{buque\}\}/g,e?e.buque:"(buque)").replace(/\{\{num\}\}/g,e?e.num:"(exp)").replace(/\{\{cliente\}\}/g,e?e.cliente:"(cliente)").replace(/\{\{eta\}\}/g,e?e.eta:"(eta)");
   var inner=ag$('#agModal');var modal=ag$('#agModalBg');
   if(!inner||!modal)return;
-  inner.innerHTML="<div class='section'><div><h3>&#x2709; "+agH(name)+"</h3></div><button class='btn' onclick='agCloseModal()'>X</button></div>"
+  inner.innerHTML="<div class='section'><div><h3>&#x2709; "+agH(name)+"</h3></div><button class='btn' data-agaction='closeModal'>X</button></div>"
     +"<div style='background:var(--bg);border:1px solid var(--line);padding:14px;border-radius:6px;font-size:12px;line-height:1.7;white-space:pre-line;font-family:monospace'>"+agH(text)+"</div>"
     +"<div class='toolbar' style='margin-top:12px;justify-content:flex-end'>"
-    +"<button class='btn' onclick='agCloseModal()'>Cerrar</button>"
-    +"<button class='btn primary' onclick='agCloseModal();toast(\"\\\""+agH(name)+"\\\" enviado via Outlook.\")'>Enviar por Outlook</button>"
+    +"<button class='btn' data-agaction='closeModal'>Cerrar</button>"
+    +"<button class='btn primary' data-agaction='closeAndSend' data-agname='"+agH(name)+"'>Enviar por Outlook</button>"
     +"</div>";
   modal.classList.add('open');
 }
@@ -3048,6 +3048,59 @@ function renderAgencias(){
   // Modal close
   var mb=ag$('#agModalBg');
   if(mb)mb.onclick=function(ev){if(ev.target===mb)agCloseModal();};
+  // Delegated event handler — ALL interactions route through here
+  var agViewEl=ag$('#agView');
+  if(agViewEl){
+    agViewEl.onclick=null;
+    agViewEl.addEventListener('click',function(ev){
+      var el=ev.target.closest('[data-agopen]');
+      if(el){agOpenExp(el.dataset.agopen);return;}
+      el=ev.target.closest('[data-agfilter]');
+      if(el){agSetFilter(el.dataset.agfilter);return;}
+      el=ev.target.closest('[data-agmodal]');
+      if(el){agOpenModal(el.dataset.agmodal);return;}
+      el=ev.target.closest('[data-agtab]');
+      if(el){agSetTab(el.dataset.agtab);return;}
+      el=ev.target.closest('[data-aggoto]');
+      if(el){agGoto(el.dataset.aggoto);return;}
+      el=ev.target.closest('[data-agtemplate]');
+      if(el){agPreviewTemplate(el.dataset.agtemplate);return;}
+      el=ev.target.closest('[data-agaction]');
+      if(el){
+        var act=el.dataset.agaction;
+        if(act==='closeModal')agCloseModal();
+        else if(act==='confirmAlta')agConfirmAlta();
+        else if(act==='confirmPda')agConfirmPda();
+        else if(act==='confirmAddCliente')agConfirmAddCliente();
+        else if(act==='marcarFacturado')agMarcarFacturado();
+        else if(act==='showOcrExtract'){var x=ag$('#agOcrExtract');if(x)x.classList.add('show');}
+        else if(act==='closeApplyOcr'){agCloseModal();toast('Actualizacion aplicada al expediente.');}
+        else if(act==='closeAndSend'){var n=el.dataset.agname||'';agCloseModal();toast('"'+n+'" enviado via Outlook.');}
+        return;
+      }
+    },true);
+  }
+  // Also delegate from modal
+  var agModalEl=ag$('#agModal');
+  if(agModalEl){
+    agModalEl.onclick=null;
+    agModalEl.addEventListener('click',function(ev){
+      var el=ev.target.closest('[data-agaction]');
+      if(el){
+        var act=el.dataset.agaction;
+        if(act==='closeModal')agCloseModal();
+        else if(act==='confirmAlta')agConfirmAlta();
+        else if(act==='confirmPda')agConfirmPda();
+        else if(act==='confirmAddCliente')agConfirmAddCliente();
+        else if(act==='showOcrExtract'){var x=ag$('#agOcrExtract');if(x)x.classList.add('show');}
+        else if(act==='closeApplyOcr'){agCloseModal();toast('Actualizacion aplicada.');}
+        else if(act==='closeAndSend'){var n=el.dataset.agname||'';agCloseModal();toast('"'+n+'" enviado.');}
+        return;
+      }
+      el=ev.target.closest('[data-agtemplate]');
+      if(el){agPreviewTemplate(el.dataset.agtemplate);return;}
+    },true);
+  }
 }
 
 
