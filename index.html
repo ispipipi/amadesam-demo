@@ -3024,33 +3024,102 @@ function agTabDatos(e){
 }
 
 function agTabCrewing(){
-  return "<div class='ag-group-bar'>ON SIGNERS</div>"
+  var th="style='padding:7px 8px;white-space:nowrap'";
+  var td="style='padding:6px 8px'";
+
+  // ── ON SIGNERS ──
+  var onSigners="<div class='ag-group-bar'>ON SIGNERS</div>"
     +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:11px'>"
     +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
-    +"<th style='padding:7px 8px;white-space:nowrap'>NAME</th><th style='padding:7px 8px'>RANK</th><th style='padding:7px 8px'>COUNTRY</th><th style='padding:7px 8px'>PASSPORT</th><th style='padding:7px 8px'>VISA</th><th style='padding:7px 8px'>FLIGHT</th><th style='padding:7px 8px'>ARRIVAL</th><th style='padding:7px 8px'>ETICKETS</th><th style='padding:7px 8px'>TAXI</th><th style='padding:7px 8px'>HOTEL</th><th style='padding:7px 8px'>EMBARK</th>"
+    +"<th "+th+">NAME</th><th "+th+">RANK</th><th "+th+">COUNTRY</th><th "+th+">PASSPORT</th>"
+    +"<th "+th+">SEAMAN BOOK</th><th "+th+">VISA</th><th "+th+">FLIGHT</th><th "+th+">ARRIVAL</th>"
+    +"<th "+th+">E-TICKETS</th><th "+th+">TAXI</th><th "+th+">HOTEL</th><th "+th+">CHECK-IN</th><th "+th+">CHECK-OUT</th>"
+    +"<th "+th+">EMBARK</th>"
     +"</tr></thead><tbody>"
-    +"<tr><td style='padding:6px 8px'>RODRIGUES, A.</td><td>2/O</td><td>PH</td><td>P4471022</td><td>OK</td><td>IB3201</td><td>13/07 22:40</td><td class='ag-done-cell'>&#x2713;</td><td class='ag-done-cell'>&#x2713;</td><td>Hotel Luz Huelva</td><td>14/07</td></tr>"
-    +"<tr><td style='padding:6px 8px'>KOWALSKI, M.</td><td>3/E</td><td>PL</td><td>PL552310</td><td>OK</td><td>VY1187</td><td>13/07 21:15</td><td class='ag-done-cell'>&#x2713;</td><td>-</td><td>Hotel Luz Huelva</td><td>14/07</td></tr>"
-    +"<tr><td style='padding:6px 8px'>SANTOS, F.</td><td>BSN</td><td>PH</td><td>P3390217</td><td>Pdte.</td><td>IB3201</td><td>13/07 22:40</td><td>-</td><td>-</td><td>-</td><td>14/07</td></tr>"
-    +"</tbody></table></div>"
-    +"<div class='ag-group-bar'>OFF SIGNERS</div>"
+    +"<tr><td "+td+">RODRIGUES, A.</td><td>2/O</td><td>PH</td><td>P4471022</td>"
+    +"<td class='ag-done-cell'>&#x2713;</td><td>OK</td><td>IB3201</td><td>13/07 22:40</td>"
+    +"<td class='ag-done-cell'>&#x2713;</td><td class='ag-done-cell'>&#x2713;</td><td>Hotel Luz Huelva</td><td>13/07</td><td>15/07</td>"
+    +"<td>14/07</td></tr>"
+    +"<tr><td "+td+">KOWALSKI, M.</td><td>3/E</td><td>PL</td><td>PL552310</td>"
+    +"<td class='ag-done-cell'>&#x2713;</td><td>OK</td><td>VY1187</td><td>13/07 21:15</td>"
+    +"<td class='ag-done-cell'>&#x2713;</td><td>-</td><td>Hotel Luz Huelva</td><td>13/07</td><td>15/07</td>"
+    +"<td>14/07</td></tr>"
+    +"<tr><td "+td+">SANTOS, F.</td><td>BSN</td><td>PH</td><td>P3390217</td>"
+    +"<td>Pdte.</td><td>Pdte.</td><td>IB3201</td><td>13/07 22:40</td>"
+    +"<td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>"
+    +"<td>14/07</td></tr>"
+    +"</tbody></table></div>";
+
+  // ── OFF SIGNERS ──
+  var offSigners="<div class='ag-group-bar'>OFF SIGNERS</div>"
     +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:11px'>"
     +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
-    +"<th style='padding:7px 8px'>NAME</th><th style='padding:7px 8px'>RANK</th><th style='padding:7px 8px'>COUNTRY</th><th style='padding:7px 8px'>PASSPORT</th><th style='padding:7px 8px'>FLIGHT</th><th style='padding:7px 8px'>DEPARTURE</th><th style='padding:7px 8px'>ETICKETS</th><th style='padding:7px 8px'>HOTEL</th><th style='padding:7px 8px'>DISEMBARK</th>"
+    +"<th "+th+">NAME</th><th "+th+">RANK</th><th "+th+">COUNTRY</th><th "+th+">PASSPORT</th>"
+    +"<th "+th+">SEAMAN BOOK</th><th "+th+">FLIGHT</th><th "+th+">DEPARTURE</th>"
+    +"<th "+th+">E-TICKETS</th><th "+th+">HOTEL</th><th "+th+">CHECK-IN</th><th "+th+">CHECK-OUT</th>"
+    +"<th "+th+">DISEMBARK</th>"
     +"</tr></thead><tbody>"
-    +"<tr><td style='padding:6px 8px'>IVANOV, D.</td><td>C/O</td><td>UA</td><td>UA009912</td><td>IB3204</td><td>15/07 09:20</td><td class='ag-done-cell'>&#x2713;</td><td>-</td><td>14/07</td></tr>"
-    +"<tr><td style='padding:6px 8px'>REYES, C.</td><td>AB</td><td>PH</td><td>P2210984</td><td>IB3204</td><td>15/07 09:20</td><td class='ag-done-cell'>&#x2713;</td><td>-</td><td>14/07</td></tr>"
-    +"</tbody></table></div>"
-    +"<div class='ag-group-bar'>CTM — CASH TO MASTER</div>"
+    +"<tr><td "+td+">IVANOV, D.</td><td>C/O</td><td>UA</td><td>UA009912</td>"
+    +"<td class='ag-done-cell'>&#x2713;</td><td>IB3204</td><td>15/07 09:20</td>"
+    +"<td class='ag-done-cell'>&#x2713;</td><td>-</td><td>-</td><td>-</td>"
+    +"<td>14/07</td></tr>"
+    +"<tr><td "+td+">REYES, C.</td><td>AB</td><td>PH</td><td>P2210984</td>"
+    +"<td class='ag-done-cell'>&#x2713;</td><td>IB3204</td><td>15/07 09:20</td>"
+    +"<td class='ag-done-cell'>&#x2713;</td><td>-</td><td>-</td><td>-</td>"
+    +"<td>14/07</td></tr>"
+    +"</tbody></table></div>";
+
+  // ── TECHNICIANS / VISITORS ──
+  var techVisitors="<div class='ag-group-bar'>TECHNICIANS / VISITORS</div>"
     +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:11px'>"
-    +"<thead style='background:var(--navy);color:#B9C2CC'><tr><th style='padding:7px 8px'>FECHA SOLICITUD</th><th style='padding:7px 8px'>IMPORTE</th><th style='padding:7px 8px'>INGRESO CLIENTE</th><th style='padding:7px 8px'>ENTREGA A BORDO</th><th style='padding:7px 8px'>ESTADO</th></tr></thead>"
-    +"<tbody><tr><td style='padding:6px 8px'>10/07</td><td>&#8364; 4.500</td><td class='ag-done-cell'>&#x2713; Recibido</td><td>Pendiente</td><td>Pdte. entrega</td></tr></tbody>"
-    +"</table></div>"
-    +"<div class='toolbar' style='margin-top:12px;flex-wrap:wrap'>"
-    +["Solicitar taxi","Solicitar hotel","OKTB","Letter of Invitation","Docs VISA / Inmigracion"].map(function(t){
-      return "<button class='ag-tmpl-btn' data-agtemplate='"+t+"'>&#x2709; "+agH(t)+"</button>";
-    }).join("")
-    +"</div>";
+    +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
+    +"<th "+th+">NAME</th><th "+th+">COMPANY</th><th "+th+">COUNTRY</th><th "+th+">PASSPORT</th>"
+    +"<th "+th+">PURPOSE</th><th "+th+">ARRIVAL</th><th "+th+">DEPARTURE</th>"
+    +"<th "+th+">TAXI IN</th><th "+th+">TAXI OUT</th><th "+th+">HOTEL</th><th "+th+">CHECK-IN</th><th "+th+">CHECK-OUT</th>"
+    +"</tr></thead><tbody>"
+    +"<tr><td colspan='12' style='padding:10px 8px;color:var(--muted);text-align:center;font-size:11px'>No visitors / technicians registered for this call.</td></tr>"
+    +"</tbody></table></div>";
+
+  // ── INMIGRACIÓN ──
+  var immigrationAppt="<div class='ag-group-bar'>IMMIGRATION APPOINTMENT</div>"
+    +"<div class='card' style='padding:14px 16px;margin-top:8px'>"
+    +"<div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:end'>"
+    +"<label style='font-size:11px;font-family:monospace'>DATE<input type='date' style='display:block;width:100%;margin-top:4px;padding:7px;border:1px solid var(--line);border-radius:5px;font-size:12px' value='2026-07-14'></label>"
+    +"<label style='font-size:11px;font-family:monospace'>TIME<input type='time' style='display:block;width:100%;margin-top:4px;padding:7px;border:1px solid var(--line);border-radius:5px;font-size:12px' value='09:00'></label>"
+    +"<div><p style='font-size:11px;font-family:monospace;margin:0 0 4px;color:var(--muted)'>STATUS</p>"
+    +"<span style='background:#e7f8f1;color:#10b981;border-radius:5px;padding:5px 12px;font-size:11px;font-family:monospace;font-weight:700'>CONFIRMED</span></div>"
+    +"</div>"
+    +"<p style='margin:10px 0 0;font-size:11px;color:var(--muted)'>All crew members must pass through immigration. Seaman books and crew list required.</p>"
+    +"<div style='margin-top:10px'>"
+    +"<button class='ag-tmpl-btn' data-agtemplate='Immigration Request'>&#x2709; Immigration Request</button>"
+    +"</div></div>";
+
+  // ── HOSPITAL ──
+  var hospital="<div class='ag-group-bar'>HOSPITAL / MEDICAL VISITS</div>"
+    +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:11px'>"
+    +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
+    +"<th "+th+">NAME</th><th "+th+">RANK</th><th "+th+">DATE</th><th "+th+">CLINIC / HOSPITAL</th>"
+    +"<th "+th+">PURPOSE</th><th "+th+">TAXI</th><th "+th+">STATUS</th>"
+    +"</tr></thead><tbody>"
+    +"<tr><td colspan='7' style='padding:10px 8px;color:var(--muted);text-align:center;font-size:11px'>No medical visits registered for this call.</td></tr>"
+    +"</tbody></table></div>";
+
+  // ── CTM ──
+  var ctm="<div class='ag-group-bar'>CTM \u2014 CASH TO MASTER</div>"
+    +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:11px'>"
+    +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
+    +"<th "+th+">REQUEST DATE</th><th "+th+">AMOUNT</th><th "+th+">FUNDS RECEIVED</th><th "+th+">DELIVERED ON BOARD</th><th "+th+">STATUS</th>"
+    +"</tr></thead>"
+    +"<tbody><tr><td "+td+">10/07</td><td>&#8364; 4.500</td><td class='ag-done-cell'>&#x2713; Received</td><td>Pending</td><td>Pending delivery</td></tr></tbody>"
+    +"</table></div>";
+
+  // ── TEMPLATE BUTTONS ──
+  var tmplBtns=["Solicitar taxi","Solicitar hotel","OKTB","Letter of Invitation","Docs VISA / Inmigracion","Immigration Request"].map(function(t){
+    return "<button class='ag-tmpl-btn' data-agtemplate='"+t+"'>&#x2709; "+agH(t)+"</button>";
+  }).join("");
+
+  return onSigners+offSigners+techVisitors+immigrationAppt+hospital+ctm
+    +"<div class='toolbar' style='margin-top:12px;flex-wrap:wrap'>"+tmplBtns+"</div>";
 }
 
 function agTabLogistics(){
@@ -3242,6 +3311,8 @@ const agTemplates={
   "Appointment Received":"Para: {{cliente}}\nAsunto: Appointment Received — M/V {{buque}} — Exp. {{num}}\n\nEstimados,\nConfirmamos nuestro nombramiento como agentes en Huelva para la escala de M/V {{buque}}, ETA {{eta}}.\nQuedamos a su disposicion para coordinar la operativa.\n\nSaludos,\nAMADESAM",
   "PDA Cliente":"Para: {{cliente}}\nAsunto: Proforma Disbursement Account — M/V {{buque}} — Exp. {{num}}\n\nAdjuntamos PDA estimada para la escala de M/V {{buque}} en Huelva.\nImporte total estimado: EUR 48.200\nRogamos confirmacion y transferencia de fondos antes del ETA.\n\nSaludos,\nAMADESAM",
   "Daily Report":"Para: {{cliente}}\nAsunto: Daily Report — M/V {{buque}} — Exp. {{num}}\n\nServicios en curso:\n- Crew change: 4 on / 3 off — en proceso\n- Spare parts: 1 de 2 recibido\n- Provisiones: entregadas 14/07 11:00\n\nSaludos,\nAMADESAM",
+  "Immigration Request":"To: Immigration Office — Port of Huelva\nSubject: Immigration Appointment Request — M/V {{buque}} — File No. {{num}}\n\nDear Sir/Madam,\n\nWe hereby request an immigration appointment for the crew of M/V {{buque}}, currently scheduled to berth at {{muelle}}, ETA {{eta}}.\n\nCrew details:\n  · On Signers: [X] crew members — Nationalities: [list]\n  · Off Signers: [X] crew members — Nationalities: [list]\n\nAll seaman books, passports and crew lists will be provided upon arrival.\n\nKindly confirm appointment date and time at your earliest convenience.\n\nKind regards,\nAMADESAM — Port Agency Huelva",
+
   "Service List":"Para: {{cliente}}\nAsunto: Service List — M/V {{buque}} — Exp. {{num}}\n\nListado de servicios prestados durante la escala adjunto en PDF.\n\nSaludos,\nAMADESAM",
 };
 function agPreviewTemplate(name){
