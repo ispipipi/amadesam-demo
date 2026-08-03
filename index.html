@@ -3054,100 +3054,92 @@ function agTabCrewing(){
 }
 
 function agTabLogistics(){
-  var th="style='padding:7px 8px;white-space:nowrap'";
-  var td="style='padding:6px 8px'";
-
-  // ── SPARE PARTS ──
-  var spareParts="<div class='ag-group-bar'>SPARE PARTS — TO RECEIVE</div>"
+  return "<div class='ag-group-bar'>SPARE PARTS — TO RECEIVE</div>"
     +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:11px'>"
     +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
-    +"<th "+th+">ITEM / ORDER</th>"
-    +"<th "+th+">COURIER / AWB</th>"
-    +"<th "+th+">PIECES</th>"
-    +"<th "+th+">WEIGHT</th>"
-    +"<th "+th+">ORIGIN</th>"
-    +"<th "+th+">DOCS/INV</th>"
-    +"<th "+th+">T1</th>"
-    +"<th "+th+">COLLECTION</th>"
-    +"<th "+th+">RECEPTION</th>"
-    +"<th "+th+">DELIVERY</th>"
+    +"<th style='padding:7px 8px'>ITEM / ORDER</th><th style='padding:7px 8px'>COURIER / AWB</th><th style='padding:7px 8px'>PIECES</th><th style='padding:7px 8px'>WEIGHT</th><th style='padding:7px 8px'>EX</th><th style='padding:7px 8px'>DOCS/FACT</th><th style='padding:7px 8px'>T1</th><th style='padding:7px 8px'>RECEPTION</th><th style='padding:7px 8px'>DELIVERY</th>"
     +"</tr></thead><tbody>"
-    +"<tr>"
-    +"<td "+td+">Turbo cartridge — PO 2291</td>"
-    +"<td>DHL / 881223410</td>"
-    +"<td>1</td>"
-    +"<td>38 kg</td>"
-    +"<td>Rotterdam</td>"
-    +"<td class='ag-done-cell'>&#x2713;</td>"
-    +"<td class='ag-done-cell'>&#x2713;</td>"
-    +"<td>SVQ 13/07</td>"
-    +"<td class='ag-done-cell'>&#x2713; Received</td>"
-    +"<td>Onboard 15/07</td>"
-    +"</tr>"
-    +"<tr>"
-    +"<td "+td+">Filter kit M/E — PO 2295</td>"
-    +"<td>FedEx / 772891045</td>"
-    +"<td>2</td>"
-    +"<td>12 kg</td>"
-    +"<td>Hamburg</td>"
-    +"<td>Pdte.</td>"
-    +"<td>—</td>"
-    +"<td style='color:#f59e0b;font-weight:700'>AGP 14/07</td>"
-    +"<td>Pendiente</td>"
-    +"<td>Onboard 15/07</td>"
-    +"</tr>"
-    +"</tbody></table></div>";
-
-  // ── PROVISIONS ──
-  var provisions="<div class='ag-group-bar' style='margin-top:16px'>OTHER SERVICES — PROVISIONS</div>"
+    +"<tr><td style='padding:6px 8px'>Turbo cartridge — PO 2291</td><td>DHL / 881223410</td><td>1</td><td>38 kg</td><td>Rotterdam</td><td class='ag-done-cell'>&#x2713;</td><td class='ag-done-cell'>&#x2713;</td><td>Pendiente</td><td>Onboard 15/07</td></tr>"
+    +"</tbody></table></div>"
+    +"<div class='ag-group-bar' style='margin-top:16px'>OTROS SERVICIOS — PROVISIONS</div>"
     +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:11px'>"
-    +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
-    +"<th "+th+">ITEM</th><th "+th+">PIECES</th><th "+th+">WEIGHT</th>"
-    +"<th "+th+">ORIGIN</th><th "+th+">COORDINATE</th><th "+th+">DELIVERY</th>"
-    +"</tr></thead>"
-    +"<tbody><tr>"
-    +"<td "+td+">Provision fresh + dry stores</td>"
-    +"<td>14 boxes</td><td>310 kg</td><td>Local</td>"
-    +"<td class='ag-done-cell'>&#x2713;</td>"
-    +"<td>14/07 11:00 — Muelle Sur 3</td>"
-    +"</tr></tbody></table></div>";
-
-  // ── LEGEND ──
-  var legend="<div style='margin-top:10px;font-size:10px;color:var(--muted);font-family:monospace'>"
-    +"<b>COLLECTION</b>: airport/collection point and date before warehouse reception "
-    +"(e.g. SVQ 13/07 = collected at Seville airport on 13/07). Leave blank if shipped direct to warehouse."
-    +"</div>";
-
-  // ── TEMPLATE BUTTONS ──
-  var tmplBtns=["Almacen Huelva","Broker Aduanas Huelva","Transportista Huelva","Courier / Forwarder","Broker Aduanas Aeropuerto"].map(function(t){
-    return "<button class='ag-tmpl-btn' data-agtemplate='Aviso a "+t+"'>&#x2709; "+agH(t)+"</button>";
-  }).join("");
-
-  return spareParts+legend+provisions
-    +"<div class='toolbar' style='margin-top:12px;flex-wrap:wrap'>"+tmplBtns+"</div>";
+    +"<thead style='background:var(--navy);color:#B9C2CC'><tr><th style='padding:7px 8px'>ITEM</th><th style='padding:7px 8px'>PIECES</th><th style='padding:7px 8px'>WEIGHT</th><th style='padding:7px 8px'>EX</th><th style='padding:7px 8px'>COORDINATE</th><th style='padding:7px 8px'>DELIVERY</th></tr></thead>"
+    +"<tbody><tr><td style='padding:6px 8px'>Provision fresh + dry stores</td><td>14 cajas</td><td>310 kg</td><td>Local</td><td class='ag-done-cell'>&#x2713;</td><td>14/07 11:00 — Muelle Sur 3</td></tr></tbody>"
+    +"</table></div>"
+    +"<div class='toolbar' style='margin-top:12px;flex-wrap:wrap'>"
+    +["Almacen Huelva","Broker Aduanas Huelva","Transportista Huelva","Courier / Forwarder"].map(function(t){
+      return "<button class='ag-tmpl-btn' data-agtemplate='Aviso a "+t+"'>&#x2709; "+agH(t)+"</button>";
+    }).join("")+"</div>";
 }
 
 function agTabPda(){
-  return "<div style='display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px'>"
-    +"<div class='ag-kpi'><div class='l'>PDA ENVIADA</div><div class='v'>&#8364; 48.200</div></div>"
-    +"<div class='ag-kpi'><div class='l'>FDA ESTIMADA</div><div class='v'>&#8364; 46.730</div></div>"
-    +"<div class='ag-kpi'><div class='l'>COSTE PROVEEDORES</div><div class='v'>&#8364; 38.910</div></div>"
-    +"<div class='ag-kpi'><div class='l'>BENEFICIO / RTB</div><div class='v pos'>&#8364; 7.820</div></div>"
-    +"</div>"
-    +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:12px'>"
-    +"<thead style='background:var(--navy);color:#B9C2CC'><tr><th style='padding:7px 8px'>SERVICIO</th><th style='padding:7px 8px'>PROVEEDOR</th><th style='padding:7px 8px'>ESTIMADO (PDA)</th><th style='padding:7px 8px'>FACTURA REAL (FDA)</th><th style='padding:7px 8px'>DIF.</th><th style='padding:7px 8px'>ESTADO FACTURA</th></tr></thead>"
-    +"<tbody>"
-    +"<tr><td style='padding:6px 8px'>Tasa de buque</td><td>Autoridad Portuaria Huelva</td><td>&#8364; 9.400</td><td>&#8364; 9.400</td><td>&#8364; 0</td><td class='ag-done-cell'>&#x2713; Recibida</td></tr>"
-    +"<tr><td style='padding:6px 8px'>Practicaje + remolcadores</td><td>Practicaje Huelva</td><td>&#8364; 6.150</td><td>&#8364; 5.980</td><td>&#8722;&#8364; 170</td><td class='ag-done-cell'>&#x2713; Recibida</td></tr>"
-    +"<tr><td style='padding:6px 8px'>Crew change (taxis/hoteles)</td><td>Varios</td><td>&#8364; 2.300</td><td>&#8364; 2.110</td><td>&#8722;&#8364; 190</td><td>Pendiente</td></tr>"
-    +"<tr><td style='padding:6px 8px'>Spare parts handling</td><td>Almacen Huelva</td><td>&#8364; 1.850</td><td>-</td><td>-</td><td>Pendiente</td></tr>"
-    +"<tr><td style='padding:6px 8px'>Honorarios agencia</td><td>AMADESAM</td><td>&#8364; 4.500</td><td>&#8364; 4.500</td><td>&#8364; 0</td><td class='ag-done-cell'>&#x2713;</td></tr>"
-    +"</tbody></table></div>"
-    +"<div class='toolbar' style='margin-top:12px'>"
-    +"<button class='btn' data-agtemplate='PDA Cliente'>&#x2709; Enviar PDA al cliente</button>"
-    +"<button class='btn' data-agtemplate='FDA a facturacion'>&#x2709; Enviar FDA a facturacion</button>"
-    +"<button class='btn primary' data-agaction='marcarFacturado'>Marcar como Facturado &#x2192;</button>"
+  var th="style='padding:7px 8px;white-space:nowrap'";
+  var td="style='padding:6px 8px'";
+
+  // ── Helper: factura button ──
+  function factBtn(received,label){
+    if(received)
+      return "<button style='font-size:10px;padding:3px 8px;border:1px solid #10b981;border-radius:4px;background:#e7f8f1;color:#10b981;cursor:pointer' title='Ver factura'>&#x1F4CE; "+label+"</button>";
+    return "<button style='font-size:10px;padding:3px 8px;border:1px dashed var(--line);border-radius:4px;background:none;color:var(--muted);cursor:pointer' title='Adjuntar factura'>+ Adjuntar</button>";
+  }
+
+  // ── KPIs ──
+  var kpis="<div style='display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px'>"
+    +"<div class='ag-kpi'><div class='l'>PDA SENT</div><div class='v'>\u20AC 48.200</div></div>"
+    +"<div class='ag-kpi'><div class='l'>FDA ESTIMATED</div><div class='v'>\u20AC 46.730</div></div>"
+    +"<div class='ag-kpi'><div class='l'>SUPPLIER COSTS</div><div class='v'>\u20AC 38.910</div></div>"
+    +"<div class='ag-kpi'><div class='l'>PROFIT / RTB</div><div class='v pos'>\u20AC 7.820</div></div>"
     +"</div>";
+
+  // ── PDA/FDA TABLE — with invoice repository column ──
+  var rows=[
+    {svc:"Port dues",prov:"Autoridad Portuaria Huelva",   pda:"9.400",  fda:"9.400",  dif:"0",     inv:true,  invLabel:"APH-2026-1124"},
+    {svc:"Pilotage + tugs",prov:"Practicaje Huelva",      pda:"6.150",  fda:"5.980",  dif:"-170",  inv:true,  invLabel:"PRAC-0871"},
+    {svc:"Mooring / unmooring",prov:"Amarradores Huelva", pda:"420",    fda:"420",    dif:"0",     inv:false, invLabel:""},
+    {svc:"Crew change — Taxis ON signers",prov:"Taxi Huelva",pda:"180", fda:"165",    dif:"-15",   inv:true,  invLabel:"TAXI-0341"},
+    {svc:"Crew change — Taxis OFF signers",prov:"Taxi Huelva",pda:"180",fda:"165",   dif:"-15",   inv:false, invLabel:""},
+    {svc:"Hotel ON signers (2 pax x 1 noche)",prov:"Hotel Luz Huelva",pda:"356",fda:"356",dif:"0",inv:true,  invLabel:"HOTEL-0088"},
+    {svc:"Hotel OFF signers",prov:"Hotel Luz Huelva",     pda:"178",    fda:"-",      dif:"-",     inv:false, invLabel:""},
+    {svc:"Immigration taxi",prov:"Taxi Huelva",            pda:"60",     fda:"-",      dif:"-",     inv:false, invLabel:""},
+    {svc:"Spare parts handling",prov:"Almacen Huelva",    pda:"1.850",  fda:"-",      dif:"-",     inv:false, invLabel:""},
+    {svc:"Spare parts — T1 transit",prov:"Broker Aduanas",pda:"320",   fda:"-",      dif:"-",     inv:false, invLabel:""},
+    {svc:"Agency fees",prov:"AMADESAM",                    pda:"4.500",  fda:"4.500",  dif:"0",     inv:true,  invLabel:"AMAD-2026-014"},
+  ].map(function(row){
+    var invCell=factBtn(row.inv,row.invLabel);
+    var diffStyle=row.dif.startsWith("-")?"color:#ef4444;font-weight:700":"";
+    return "<tr>"
+      +"<td "+td+">"+row.svc+"</td>"
+      +"<td "+td+" style='color:var(--muted);font-size:11px'>"+row.prov+"</td>"
+      +"<td "+td+">\u20AC "+row.pda+"</td>"
+      +"<td "+td+" style='"+diffStyle+"'>"+(row.fda==="-"?"<span style='color:var(--muted)'>-</span>":"\u20AC "+row.fda)+"</td>"
+      +"<td "+td+" style='"+diffStyle+"'>"+(row.dif==="-"?"<span style='color:var(--muted)'>-</span>":(row.dif.startsWith("-")?"\u20AC "+row.dif:"\u20AC "+row.dif))+"</td>"
+      +"<td "+td+">"+invCell+"</td>"
+      +"</tr>";
+  }).join("");
+
+  var table="<div class='ag-table-wrap'>"
+    +"<table style='width:100%;border-collapse:collapse;font-size:12px'>"
+    +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
+    +"<th "+th+">SERVICE</th>"
+    +"<th "+th+">SUPPLIER</th>"
+    +"<th "+th+">ESTIMATED (PDA)</th>"
+    +"<th "+th+">ACTUAL (FDA)</th>"
+    +"<th "+th+">DIFF.</th>"
+    +"<th "+th+">INVOICE</th>"
+    +"</tr></thead>"
+    +"<tbody>"+rows+"</tbody>"
+    +"</table></div>"
+    +"<p style='font-size:10px;color:var(--muted);margin:6px 0 0;font-family:monospace'>"
+    +"INVOICE: attach supplier invoices to each line. Click a received invoice to view it. All invoices must be attached before marking as billable.</p>";
+
+  // ── ACTIONS ──
+  var actions="<div class='toolbar' style='margin-top:14px'>"
+    +"<button class='btn' data-agtemplate='PDA Cliente'>&#x2709; Send PDA to client</button>"
+    +"<button class='btn' data-agtemplate='FDA a facturacion'>&#x2709; Send FDA to billing</button>"
+    +"<button class='btn primary' data-agaction='marcarFacturado'>Mark as Billable &#x2192;</button>"
+    +"</div>";
+
+  return kpis+table+actions;
 }
 
 // ── EXPEDIENTE ──
