@@ -1,4 +1,4 @@
-<!-- v20260803123732 -->
+<!-- v20260714200410 -->
 <!-- cache-bust:2026-07-01T13:54:52.682318+00:00 -->
 <!doctype html>
 <html lang="es">
@@ -2995,8 +2995,10 @@ function agTabDatos(e){
       +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:4px 20px'>"
       +agChk("Appointment received",true)+agChk("PDA sent",true)
       +agChk("Prearrival sent",true)+agChk("Prearrival received",false)
-      +agChk("ENS / Decl. Sumaria",false)+agChk("Funds received",false)
+      +agChk("ENS (Decl. Sumaria Entrada)",false)+agChk("Manifiesto de Carga",false)
+      +agChk("Zip Clearance",false)+agChk("Funds received",false)
       +agChk("Service List",false)+agChk("Cargo docs received",false)
+      +agChk("Mercancias Peligrosas (entrada)",false)+agChk("Mercancias Peligrosas (salida)",true)
       +"</div></div></div>"
       +agClientesBlock(e);
   } else {
@@ -3013,8 +3015,9 @@ function agTabDatos(e){
       +"<div style='display:grid;grid-template-columns:1fr 1fr;gap:4px 20px'>"
       +agChk("Appointment received",true)+agChk("PDA sent",true)
       +agChk("Prearrival sent",false)+agChk("Prearrival received",false)
-      +agChk("ENS / Decl. Sumaria",false)+agChk("Service List",false)
-      +agChk("BDN received",false)
+      +agChk("ENS (Decl. Sumaria Entrada)",false)+agChk("Manifiesto de Carga",false)
+      +agChk("Zip Clearance",false)+agChk("Service List",false)
+      +agChk("BDN received",false)+agChk("Mercancias Peligrosas (salida)",true)
       +"</div></div></div>"
       +agClientesBlock(e);
   }
@@ -3106,15 +3109,8 @@ function agRenderExpediente(num){
   else if(agState.openTab==="logistics")body=agTabLogistics();
   else if(agState.openTab==="pda")body=agTabPda();
 
-  var tmplBase=["Appointment Received","PDA Cliente","Service List"];
-  var tmplByTipo={
-    HUSBANDRY:["Prearrival \u2014 Husbandry","Daily Report \u2014 Husbandry"],
-    COMERCIAL:["Prearrival \u2014 Comercial/Tecnica","SOF / Daily Report \u2014 Comercial"],
-    TECNICA:["Prearrival \u2014 Comercial/Tecnica","Daily Report \u2014 Husbandry"],
-  };
-  var tmplList=tmplBase.concat(tmplByTipo[e.tipo]||[]);
-  var tmplBtns=tmplList.map(function(t){
-    return "<button class='ag-tmpl-btn' data-agtemplate='"+agH(t)+"'><span>&#x2709;</span> "+agH(t)+"</button>";
+  var tmplBtns=["Appointment Received","PDA Cliente","Daily Report","Service List"].map(function(t){
+    return "<button class='ag-tmpl-btn' data-agtemplate='"+t+"'>&#x2709; "+agH(t)+"</button>";
   }).join("");
 
   return "<div class='ag-breadcrumb'><a data-aggoto='pizarra'>Pizarra</a> &nbsp;/&nbsp; "+agH(e.num)+" &nbsp;/&nbsp; "+agH(agTipoLabel[e.tipo]||e.tipo)+"</div>"
@@ -3243,32 +3239,15 @@ function agMarcarFacturado(){
 
 // ── TEMPLATE PREVIEW ──
 const agTemplates={
-  "Appointment Received":"To: {{cliente}}\nSubject: Appointment Received — M/V {{buque}} — File No. {{num}}\n\nDear {{cliente}},\n\nWe hereby confirm our appointment as Port Agents in Huelva for the call of M/V {{buque}}.\n\nETA: {{eta}}\nBerth: {{muelle}}\n\nWe remain at your disposal for all port matters and will keep you updated accordingly.\n\nKind regards,\nAMADESAM — Port Agency Huelva",
-
-  "Prearrival — Husbandry":"To: {{cliente}}\nSubject: Pre-arrival Notification — M/V {{buque}} — File No. {{num}}\n\nDear {{cliente}},\n\nPlease find below the pre-arrival notification for M/V {{buque}}.\n\nETA: {{eta}}\nExpected Berth: {{muelle}}\nFile No.: {{num}}\n\nServices requested:\n- Crew change\n- Spare parts handling\n- Provisions\n\nKindly confirm receipt and advise if any changes are expected.\n\nKind regards,\nAMADESAM — Port Agency Huelva",
-
-  "Prearrival — Comercial/Tecnica":"To: {{cliente}}\nSubject: Pre-arrival Notification — M/V {{buque}} — File No. {{num}}\n\nDear {{cliente}},\n\nPlease find below the pre-arrival notification for M/V {{buque}}.\n\nETA: {{eta}}\nExpected Berth / Anchorage: {{muelle}}\nFile No.: {{num}}\n\nOperation details:\n- Type: {{tipo}}\n- Port: Huelva\n\nWe will revert with further updates as vessel approaches port.\nKindly ensure all pre-arrival documentation is submitted at least 24h before ETA.\n\nKind regards,\nAMADESAM — Port Agency Huelva",
-
-  "Daily Report — Husbandry":"To: {{cliente}}\nSubject: Daily Report — M/V {{buque}} — {{fecha}} — File No. {{num}}\n\nDear {{cliente}},\n\nPlease find below the daily report for M/V {{buque}} as of {{fecha}}:\n\nCREW CHANGE\n  · Crew on signers: [X] pax — Status: [Onboard / Pending / In transit]\n  · Crew off signers: [X] pax — Status: [Disembarked / Pending / In transit]\n  · Immigration appointment: [Date / Time / Pending]\n\nSPARE PARTS\n  · [Item] — AWB [No.] — Status: [Received at warehouse / In transit / Pending collection]\n\nPROVISIONS\n  · Status: [Delivered / Scheduled for DD/MM HH:MM]\n\nOTHER SERVICES\n  · [Note any additional services in progress]\n\nNext update: [Date]\n\nKind regards,\nAMADESAM — Port Agency Huelva",
-
-  "SOF / Daily Report — Comercial":"To: {{cliente}}\nSubject: SOF & Daily Report — M/V {{buque}} — {{fecha}} — File No. {{num}}\n\nDear {{cliente}},\n\nPlease find below the Statement of Facts and daily update for M/V {{buque}}:\n\nSTATEMENT OF FACTS\n  EOSP:           [DD/MM HH:MM UTC]\n  Anchor Drop:    [DD/MM HH:MM UTC]\n  Pilot On Board: [DD/MM HH:MM UTC]\n  First Line:     [DD/MM HH:MM UTC]\n  All Fast:       [DD/MM HH:MM UTC]\n  Operations Commenced: [DD/MM HH:MM UTC]\n  Ops Completed:  [DD/MM HH:MM UTC]\n  Last Line:      [DD/MM HH:MM UTC]\n  Pilot Away:     [DD/MM HH:MM UTC]\n\nCARGO SUMMARY\n  · Cargo loaded / discharged: [Quantity] MT / [Units]\n  · Stoppages: [Duration / Reason]\n  · Weather delays: [Yes / No]\n\nOPERATIONAL STATUS: [In progress / Completed]\n\nKind regards,\nAMADESAM — Port Agency Huelva",
-
-  "PDA Cliente":"To: {{cliente}}\nSubject: Proforma Disbursement Account — M/V {{buque}} — File No. {{num}}\n\nDear {{cliente}},\n\nPlease find attached our Proforma Disbursement Account (PDA) for the forthcoming call of M/V {{buque}} in Huelva.\n\nEstimated total: EUR [AMOUNT]\n\nKindly arrange funds transfer prior to vessel\'s ETA ({{eta}}).\nBank details available upon request.\n\nKind regards,\nAMADESAM — Port Agency Huelva",
-
-  "Service List":"To: {{cliente}}\nSubject: Service List — M/V {{buque}} — File No. {{num}}\n\nDear {{cliente}},\n\nPlease find attached the complete list of services rendered during the call of M/V {{buque}} in Huelva.\n\nShould you have any queries, please do not hesitate to contact us.\n\nKind regards,\nAMADESAM — Port Agency Huelva",
+  "Appointment Received":"Para: {{cliente}}\nAsunto: Appointment Received — M/V {{buque}} — Exp. {{num}}\n\nEstimados,\nConfirmamos nuestro nombramiento como agentes en Huelva para la escala de M/V {{buque}}, ETA {{eta}}.\nQuedamos a su disposicion para coordinar la operativa.\n\nSaludos,\nAMADESAM",
+  "PDA Cliente":"Para: {{cliente}}\nAsunto: Proforma Disbursement Account — M/V {{buque}} — Exp. {{num}}\n\nAdjuntamos PDA estimada para la escala de M/V {{buque}} en Huelva.\nImporte total estimado: EUR 48.200\nRogamos confirmacion y transferencia de fondos antes del ETA.\n\nSaludos,\nAMADESAM",
+  "Daily Report":"Para: {{cliente}}\nAsunto: Daily Report — M/V {{buque}} — Exp. {{num}}\n\nServicios en curso:\n- Crew change: 4 on / 3 off — en proceso\n- Spare parts: 1 de 2 recibido\n- Provisiones: entregadas 14/07 11:00\n\nSaludos,\nAMADESAM",
+  "Service List":"Para: {{cliente}}\nAsunto: Service List — M/V {{buque}} — Exp. {{num}}\n\nListado de servicios prestados durante la escala adjunto en PDF.\n\nSaludos,\nAMADESAM",
 };
 function agPreviewTemplate(name){
   var e=agState.openExp?agState.expedientes.find(function(x){return x.num===agState.openExp;}):null;
   var raw=agTemplates[name]||("Para: {{cliente}}\nAsunto: "+name+" — M/V {{buque}} — Exp. {{num}}\n\n[Plantilla \""+name+"\" — contenido de muestra.]\n\nSaludos,\nAMADESAM");
-  var hoy=new Date().toLocaleDateString("es-ES",{day:"2-digit",month:"2-digit",year:"numeric"});
-  var text=raw
-    .replace(/\{\{buque\}\}/g,e?e.buque:"(buque)")
-    .replace(/\{\{num\}\}/g,e?e.num:"(exp)")
-    .replace(/\{\{cliente\}\}/g,e?e.cliente:"(cliente)")
-    .replace(/\{\{eta\}\}/g,e?e.eta:"(eta)")
-    .replace(/\{\{muelle\}\}/g,e?e.muelle:"(muelle)")
-    .replace(/\{\{tipo\}\}/g,e?(agTipoLabel[e.tipo]||e.tipo):"(tipo)")
-    .replace(/\{\{fecha\}\}/g,hoy);
+  var text=raw.replace(/\{\{buque\}\}/g,e?e.buque:"(buque)").replace(/\{\{num\}\}/g,e?e.num:"(exp)").replace(/\{\{cliente\}\}/g,e?e.cliente:"(cliente)").replace(/\{\{eta\}\}/g,e?e.eta:"(eta)");
   var inner=ag$('#agModal');var modal=ag$('#agModalBg');
   if(!inner||!modal)return;
   inner.innerHTML="<div class='section'><div><h3>&#x2709; "+agH(name)+"</h3></div><button class='btn' data-agaction='closeModal'>X</button></div>"
