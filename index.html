@@ -3026,33 +3026,178 @@ function agTabDatos(e){
 }
 
 function agTabCrewing(){
-  return "<div class='ag-group-bar'>ON SIGNERS</div>"
+  var th="style='padding:7px 8px;white-space:nowrap;font-size:10px'";
+  var td="style='padding:6px 8px;font-size:11px'";
+
+  // ── Helper: immigration cell ──
+  function immCell(val){
+    if(!val||val==='pending')
+      return "<span style='background:#fff7e8;color:#f59e0b;border-radius:4px;padding:2px 6px;font-size:10px;font-family:monospace;cursor:pointer' title='Click to set appointment'>Pending</span>";
+    return "<span style='background:#e7f8f1;color:#10b981;border-radius:4px;padding:2px 6px;font-size:10px;font-family:monospace'>"+val+"</span>";
+  }
+  function seamanCell(ok){
+    if(ok) return "<span style='color:#10b981;font-weight:700;font-size:14px' title='Seaman book received'>&#x2713;</span>";
+    return "<span style='color:#94a3b8;font-size:14px' title='Pending'>&#x2014;</span>";
+  }
+  function taxiCell(ok){
+    if(ok) return "<span style='color:#10b981;font-weight:700;font-size:14px' title='Taxi booked'>&#x2713;</span>";
+    return "<span style='color:#94a3b8;font-size:14px' title='Pending'>&#x2014;</span>";
+  }
+
+  // ── ON SIGNERS ──
+  var onHdr="<div class='ag-group-bar'>ON SIGNERS</div>"
     +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:11px'>"
     +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
-    +"<th style='padding:7px 8px;white-space:nowrap'>NAME</th><th style='padding:7px 8px'>RANK</th><th style='padding:7px 8px'>COUNTRY</th><th style='padding:7px 8px'>PASSPORT</th><th style='padding:7px 8px'>VISA</th><th style='padding:7px 8px'>FLIGHT</th><th style='padding:7px 8px'>ARRIVAL</th><th style='padding:7px 8px'>ETICKETS</th><th style='padding:7px 8px'>TAXI</th><th style='padding:7px 8px'>HOTEL</th><th style='padding:7px 8px'>EMBARK</th>"
+    +"<th "+th+">NAME</th>"
+    +"<th "+th+">RANK</th>"
+    +"<th "+th+">CTRY</th>"
+    +"<th "+th+">PASSPORT</th>"
+    +"<th "+th+">SEAMAN BK</th>"
+    +"<th "+th+">VISA</th>"
+    +"<th "+th+">FLIGHT</th>"
+    +"<th "+th+">ARRIVAL</th>"
+    +"<th "+th+">TAXI</th>"
+    +"<th "+th+">IMMIGRATION</th>"
+    +"<th "+th+">TAXI IMM.</th>"
+    +"<th "+th+">E-TICKETS</th>"
+    +"<th "+th+">HOTEL</th>"
+    +"<th "+th+">CHECK-IN</th>"
+    +"<th "+th+">CHECK-OUT</th>"
+    +"<th "+th+">EMBARK</th>"
     +"</tr></thead><tbody>"
-    +"<tr><td style='padding:6px 8px'>RODRIGUES, A.</td><td>2/O</td><td>PH</td><td>P4471022</td><td>OK</td><td>IB3201</td><td>13/07 22:40</td><td class='ag-done-cell'>&#x2713;</td><td class='ag-done-cell'>&#x2713;</td><td>Hotel Luz Huelva</td><td>14/07</td></tr>"
-    +"<tr><td style='padding:6px 8px'>KOWALSKI, M.</td><td>3/E</td><td>PL</td><td>PL552310</td><td>OK</td><td>VY1187</td><td>13/07 21:15</td><td class='ag-done-cell'>&#x2713;</td><td>-</td><td>Hotel Luz Huelva</td><td>14/07</td></tr>"
-    +"<tr><td style='padding:6px 8px'>SANTOS, F.</td><td>BSN</td><td>PH</td><td>P3390217</td><td>Pdte.</td><td>IB3201</td><td>13/07 22:40</td><td>-</td><td>-</td><td>-</td><td>14/07</td></tr>"
-    +"</tbody></table></div>"
-    +"<div class='ag-group-bar'>OFF SIGNERS</div>"
+    +"<tr>"
+    +"<td "+td+">RODRIGUES, A.</td><td>2/O</td><td>PH</td><td>P4471022</td>"
+    +"<td style='padding:6px 8px;text-align:center'>"+seamanCell(true)+"</td>"
+    +"<td>OK</td><td>IB3201</td><td>13/07 22:40</td>"
+    +"<td style='padding:6px 8px;text-align:center'>"+taxiCell(true)+"</td>"
+    +"<td>"+immCell("14/07 09:00")+"</td>"
+    +"<td style='padding:6px 8px;text-align:center'>"+taxiCell(true)+"</td>"
+    +"<td style='padding:6px 8px' class='ag-done-cell'>&#x2713;</td>"
+    +"<td>Hotel Luz Huelva</td><td>13/07</td><td>15/07</td>"
+    +"<td>14/07</td>"
+    +"</tr>"
+    +"<tr>"
+    +"<td "+td+">KOWALSKI, M.</td><td>3/E</td><td>PL</td><td>PL552310</td>"
+    +"<td style='padding:6px 8px;text-align:center'>"+seamanCell(true)+"</td>"
+    +"<td>OK</td><td>VY1187</td><td>13/07 21:15</td>"
+    +"<td style='padding:6px 8px;text-align:center'>"+taxiCell(true)+"</td>"
+    +"<td>"+immCell("14/07 09:00")+"</td>"
+    +"<td style='padding:6px 8px;text-align:center'>"+taxiCell(false)+"</td>"
+    +"<td class='ag-done-cell'>&#x2713;</td>"
+    +"<td>Hotel Luz Huelva</td><td>13/07</td><td>15/07</td>"
+    +"<td>14/07</td>"
+    +"</tr>"
+    +"<tr>"
+    +"<td "+td+">SANTOS, F.</td><td>BSN</td><td>PH</td><td>P3390217</td>"
+    +"<td style='padding:6px 8px;text-align:center'>"+seamanCell(false)+"</td>"
+    +"<td>Pdte.</td><td>IB3201</td><td>13/07 22:40</td>"
+    +"<td style='padding:6px 8px;text-align:center'>"+taxiCell(false)+"</td>"
+    +"<td>"+immCell('pending')+"</td>"
+    +"<td style='padding:6px 8px;text-align:center'>"+taxiCell(false)+"</td>"
+    +"<td>\u2014</td><td>\u2014</td><td>\u2014</td><td>\u2014</td>"
+    +"<td>14/07</td>"
+    +"</tr>"
+    +"</tbody></table></div>";
+
+  // ── OFF SIGNERS ──
+  var offHdr="<div class='ag-group-bar'>OFF SIGNERS</div>"
     +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:11px'>"
     +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
-    +"<th style='padding:7px 8px'>NAME</th><th style='padding:7px 8px'>RANK</th><th style='padding:7px 8px'>COUNTRY</th><th style='padding:7px 8px'>PASSPORT</th><th style='padding:7px 8px'>FLIGHT</th><th style='padding:7px 8px'>DEPARTURE</th><th style='padding:7px 8px'>ETICKETS</th><th style='padding:7px 8px'>HOTEL</th><th style='padding:7px 8px'>DISEMBARK</th>"
+    +"<th "+th+">NAME</th>"
+    +"<th "+th+">RANK</th>"
+    +"<th "+th+">CTRY</th>"
+    +"<th "+th+">PASSPORT</th>"
+    +"<th "+th+">SEAMAN BK</th>"
+    +"<th "+th+">FLIGHT</th>"
+    +"<th "+th+">DEPARTURE</th>"
+    +"<th "+th+">TAXI</th>"
+    +"<th "+th+">E-TICKETS</th>"
+    +"<th "+th+">HOTEL</th>"
+    +"<th "+th+">CHECK-IN</th>"
+    +"<th "+th+">CHECK-OUT</th>"
+    +"<th "+th+">DISEMBARK</th>"
     +"</tr></thead><tbody>"
-    +"<tr><td style='padding:6px 8px'>IVANOV, D.</td><td>C/O</td><td>UA</td><td>UA009912</td><td>IB3204</td><td>15/07 09:20</td><td class='ag-done-cell'>&#x2713;</td><td>-</td><td>14/07</td></tr>"
-    +"<tr><td style='padding:6px 8px'>REYES, C.</td><td>AB</td><td>PH</td><td>P2210984</td><td>IB3204</td><td>15/07 09:20</td><td class='ag-done-cell'>&#x2713;</td><td>-</td><td>14/07</td></tr>"
-    +"</tbody></table></div>"
-    +"<div class='ag-group-bar'>CTM — CASH TO MASTER</div>"
+    +"<tr>"
+    +"<td "+td+">IVANOV, D.</td><td>C/O</td><td>UA</td><td>UA009912</td>"
+    +"<td style='padding:6px 8px;text-align:center'>"+seamanCell(true)+"</td>"
+    +"<td>IB3204</td><td>15/07 09:20</td>"
+    +"<td style='padding:6px 8px;text-align:center'>"+taxiCell(true)+"</td>"
+    +"<td class='ag-done-cell'>&#x2713;</td>"
+    +"<td>\u2014</td><td>\u2014</td><td>\u2014</td>"
+    +"<td>14/07</td>"
+    +"</tr>"
+    +"<tr>"
+    +"<td "+td+">REYES, C.</td><td>AB</td><td>PH</td><td>P2210984</td>"
+    +"<td style='padding:6px 8px;text-align:center'>"+seamanCell(true)+"</td>"
+    +"<td>IB3204</td><td>15/07 09:20</td>"
+    +"<td style='padding:6px 8px;text-align:center'>"+taxiCell(false)+"</td>"
+    +"<td class='ag-done-cell'>&#x2713;</td>"
+    +"<td>\u2014</td><td>\u2014</td><td>\u2014</td>"
+    +"<td>14/07</td>"
+    +"</tr>"
+    +"</tbody></table></div>";
+
+  // ── VISITORS ──
+  var visitors="<div class='ag-group-bar'>VISITORS</div>"
     +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:11px'>"
-    +"<thead style='background:var(--navy);color:#B9C2CC'><tr><th style='padding:7px 8px'>FECHA SOLICITUD</th><th style='padding:7px 8px'>IMPORTE</th><th style='padding:7px 8px'>INGRESO CLIENTE</th><th style='padding:7px 8px'>ENTREGA A BORDO</th><th style='padding:7px 8px'>ESTADO</th></tr></thead>"
-    +"<tbody><tr><td style='padding:6px 8px'>10/07</td><td>&#8364; 4.500</td><td class='ag-done-cell'>&#x2713; Recibido</td><td>Pendiente</td><td>Pdte. entrega</td></tr></tbody>"
-    +"</table></div>"
-    +"<div class='toolbar' style='margin-top:12px;flex-wrap:wrap'>"
-    +["Solicitar taxi","Solicitar hotel","OKTB","Letter of Invitation","Docs VISA / Inmigracion"].map(function(t){
-      return "<button class='ag-tmpl-btn' data-agtemplate='"+t+"'>&#x2709; "+agH(t)+"</button>";
-    }).join("")
-    +"</div>";
+    +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
+    +"<th "+th+">NAME</th>"
+    +"<th "+th+">COMPANY</th>"
+    +"<th "+th+">CTRY</th>"
+    +"<th "+th+">PASSPORT</th>"
+    +"<th "+th+">PURPOSE</th>"
+    +"<th "+th+">ARRIVAL</th>"
+    +"<th "+th+">DEPARTURE</th>"
+    +"<th "+th+">TAXI IN</th>"
+    +"<th "+th+">TAXI OUT</th>"
+    +"<th "+th+">HOTEL</th>"
+    +"<th "+th+">CHECK-IN</th>"
+    +"<th "+th+">CHECK-OUT</th>"
+    +"</tr></thead><tbody>"
+    +"<tr><td colspan='12' style='padding:12px 8px;color:var(--muted);text-align:center;font-size:11px'>No visitors registered for this call.</td></tr>"
+    +"</tbody></table></div>";
+
+  // ── IMMIGRATION APPOINTMENT ──
+  var imm="<div class='ag-group-bar'>IMMIGRATION APPOINTMENT</div>"
+    +"<div class='card' style='padding:14px 16px;margin-top:8px'>"
+    +"<div style='display:grid;grid-template-columns:auto auto auto 1fr;gap:12px;align-items:end'>"
+    +"<label style='font-size:11px;font-family:monospace'>DATE<input type='date' value='2026-07-14' style='display:block;width:100%;margin-top:4px;padding:7px;border:1px solid var(--line);border-radius:5px;font-size:12px'></label>"
+    +"<label style='font-size:11px;font-family:monospace'>TIME<input type='time' value='09:00' style='display:block;width:100%;margin-top:4px;padding:7px;border:1px solid var(--line);border-radius:5px;font-size:12px'></label>"
+    +"<div><p style='font-size:11px;font-family:monospace;margin:0 0 4px;color:var(--muted)'>STATUS</p>"
+    +"<span style='background:#e7f8f1;color:#10b981;border-radius:5px;padding:5px 12px;font-size:11px;font-family:monospace;font-weight:700'>CONFIRMED</span></div>"
+    +"<p style='margin:0;font-size:11px;color:var(--muted);padding-bottom:4px'>Seaman books, passports and crew list required. All crew must attend.</p>"
+    +"</div>"
+    +"<div style='margin-top:10px;display:flex;gap:8px;flex-wrap:wrap'>"
+    +"<button class='ag-tmpl-btn' data-agtemplate='Immigration Request'>\u2709 Immigration Appointment</button>"
+    +"<button class='ag-tmpl-btn' data-agtemplate='Exit Visa'>\u2709 Exit Visa</button>"
+    +"</div></div>";
+
+  // ── CTM — all in English ──
+  var ctm="<div class='ag-group-bar'>CASH TO MASTER (CTM)</div>"
+    +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:11px'>"
+    +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
+    +"<th "+th+">REQUEST DATE</th>"
+    +"<th "+th+">AMOUNT</th>"
+    +"<th "+th+">FUNDS RECEIVED</th>"
+    +"<th "+th+">DELIVERED ON BOARD</th>"
+    +"<th "+th+">STATUS</th>"
+    +"</tr></thead>"
+    +"<tbody><tr>"
+    +"<td "+td+">10/07/2026</td>"
+    +"<td>\u20AC 4,500</td>"
+    +"<td class='ag-done-cell'>\u2713 Received</td>"
+    +"<td>Pending</td>"
+    +"<td><span style='background:#fff7e8;color:#f59e0b;border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace'>Pending delivery</span></td>"
+    +"</tr></tbody>"
+    +"</table></div>";
+
+  // ── EMAIL BUTTONS — crewing ──
+  var emailBtns=["Immigration Request","Exit Visa","Solicitar taxi","Solicitar hotel","OKTB","Letter of Invitation","Docs VISA / Inmigracion"].map(function(t){
+    return "<button class='ag-tmpl-btn' data-agtemplate='"+t+"'>\u2709 "+agH(t)+"</button>";
+  }).join("");
+
+  return onHdr+offHdr+visitors+imm+ctm
+    +"<div class='toolbar' style='margin-top:12px;flex-wrap:wrap'>"+emailBtns+"</div>";
 }
 
 function agTabLogistics(){
