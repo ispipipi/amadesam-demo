@@ -3160,70 +3160,129 @@ function agTabLogistics(){
 }
 
 function agTabPda(){
-  var th="style='padding:7px 8px;white-space:nowrap'";
-  var td="style='padding:6px 8px'";
+  var th="style='padding:7px 8px;white-space:nowrap;font-size:10px'";
+  var td="style='padding:6px 8px;font-size:11px'";
 
-  // ── Helper: factura button ──
-  function factBtn(received,label){
+  // ── Invoice button helper ──
+  function invBtn(received,label){
     if(received)
-      return "<button style='font-size:10px;padding:3px 8px;border:1px solid #10b981;border-radius:4px;background:#e7f8f1;color:#10b981;cursor:pointer' title='Ver factura'>&#x1F4CE; "+label+"</button>";
-    return "<button style='font-size:10px;padding:3px 8px;border:1px dashed var(--line);border-radius:4px;background:none;color:var(--muted);cursor:pointer' title='Adjuntar factura'>+ Adjuntar</button>";
+      return "<button style='font-size:10px;padding:3px 8px;border:1px solid #10b981;border-radius:4px;background:#e7f8f1;color:#10b981;cursor:pointer' title='View invoice'>\uD83D\uDCCE "+agH(label)+"</button>";
+    return "<button style='font-size:10px;padding:3px 8px;border:1px dashed var(--line);border-radius:4px;background:none;color:var(--muted);cursor:pointer' title='Attach invoice via OCR'>+ OCR</button>";
+  }
+  function diffCell(v){
+    if(v==="-") return "<span style='color:var(--muted)'>-</span>";
+    if(v.startsWith("-")) return "<span style='color:#ef4444;font-weight:700'>"+v+"</span>";
+    return v;
   }
 
   // ── KPIs ──
-  var kpis="<div style='display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px'>"
-    +"<div class='ag-kpi'><div class='l'>PDA SENT</div><div class='v'>\u20AC 48.200</div></div>"
-    +"<div class='ag-kpi'><div class='l'>FDA ESTIMATED</div><div class='v'>\u20AC 46.730</div></div>"
-    +"<div class='ag-kpi'><div class='l'>SUPPLIER COSTS</div><div class='v'>\u20AC 38.910</div></div>"
-    +"<div class='ag-kpi'><div class='l'>PROFIT / RTB</div><div class='v pos'>\u20AC 7.820</div></div>"
+  var kpis="<div style='display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px'>"
+    +"<div class='ag-kpi'><div class='l'>PDA SENT</div><div class='v'>\u20AC 48,200</div></div>"
+    +"<div class='ag-kpi'><div class='l'>FDA ESTIMATED</div><div class='v'>\u20AC 46,730</div></div>"
+    +"<div class='ag-kpi'><div class='l'>SUPPLIER COSTS</div><div class='v'>\u20AC 38,910</div></div>"
+    +"<div class='ag-kpi'><div class='l'>PROFIT / RTB</div><div class='v pos'>\u20AC 7,820</div></div>"
     +"</div>";
 
-  // ── PDA/FDA TABLE — with invoice repository column ──
-  var rows=[
-    {svc:"Port dues",prov:"Autoridad Portuaria Huelva",   pda:"9.400",  fda:"9.400",  dif:"0",     inv:true,  invLabel:"APH-2026-1124"},
-    {svc:"Pilotage + tugs",prov:"Practicaje Huelva",      pda:"6.150",  fda:"5.980",  dif:"-170",  inv:true,  invLabel:"PRAC-0871"},
-    {svc:"Mooring / unmooring",prov:"Amarradores Huelva", pda:"420",    fda:"420",    dif:"0",     inv:false, invLabel:""},
-    {svc:"Crew change — Taxis ON signers",prov:"Taxi Huelva",pda:"180", fda:"165",    dif:"-15",   inv:true,  invLabel:"TAXI-0341"},
-    {svc:"Crew change — Taxis OFF signers",prov:"Taxi Huelva",pda:"180",fda:"165",   dif:"-15",   inv:false, invLabel:""},
-    {svc:"Hotel ON signers (2 pax x 1 noche)",prov:"Hotel Luz Huelva",pda:"356",fda:"356",dif:"0",inv:true,  invLabel:"HOTEL-0088"},
-    {svc:"Hotel OFF signers",prov:"Hotel Luz Huelva",     pda:"178",    fda:"-",      dif:"-",     inv:false, invLabel:""},
-    {svc:"Immigration taxi",prov:"Taxi Huelva",            pda:"60",     fda:"-",      dif:"-",     inv:false, invLabel:""},
-    {svc:"Spare parts handling",prov:"Almacen Huelva",    pda:"1.850",  fda:"-",      dif:"-",     inv:false, invLabel:""},
-    {svc:"Spare parts — T1 transit",prov:"Broker Aduanas",pda:"320",   fda:"-",      dif:"-",     inv:false, invLabel:""},
-    {svc:"Agency fees",prov:"AMADESAM",                    pda:"4.500",  fda:"4.500",  dif:"0",     inv:true,  invLabel:"AMAD-2026-014"},
-  ].map(function(row){
-    var invCell=factBtn(row.inv,row.invLabel);
-    var diffStyle=row.dif.startsWith("-")?"color:#ef4444;font-weight:700":"";
+  // ── PDA ROWS — fully desglosed ──
+  var pdaRows=[
+    // PORT DUES
+    {group:"PORT DUES",svc:"Port dues (GT-based)",        prov:"Autoridad Portuaria Huelva",  pda:"9,400", fda:"9,400", dif:"0",    inv:true,  invLbl:"APH-2026-1124"},
+    {group:"",         svc:"Pilotage",                    prov:"Practicaje Huelva",            pda:"3,800", fda:"3,680", dif:"-120", inv:true,  invLbl:"PRAC-0871A"},
+    {group:"",         svc:"Tugs (2 tugs x 2 manoeuvres)",prov:"Practicaje Huelva",            pda:"2,350", fda:"2,300", dif:"-50",  inv:true,  invLbl:"PRAC-0871B"},
+    {group:"",         svc:"Mooring / unmooring",         prov:"Amarradores Huelva",           pda:"420",   fda:"420",   dif:"0",    inv:false, invLbl:""},
+    // CREWING
+    {group:"CREWING",  svc:"Taxi — ON signers (3 pax)",   prov:"Taxi Huelva",                  pda:"180",   fda:"165",   dif:"-15",  inv:true,  invLbl:"TAXI-0341A"},
+    {group:"",         svc:"Taxi — OFF signers (2 pax)",  prov:"Taxi Huelva",                  pda:"120",   fda:"110",   dif:"-10",  inv:false, invLbl:""},
+    {group:"",         svc:"Taxi — Immigration (3 pax)",  prov:"Taxi Huelva",                  pda:"90",    fda:"-",     dif:"-",    inv:false, invLbl:""},
+    {group:"",         svc:"Hotel ON signers (2 pax x 2n)",prov:"Hotel Luz Huelva",            pda:"356",   fda:"356",   dif:"0",    inv:true,  invLbl:"HOTEL-0088"},
+    {group:"",         svc:"Hotel OFF signers",           prov:"Hotel Luz Huelva",             pda:"178",   fda:"-",     dif:"-",    inv:false, invLbl:""},
+    {group:"",         svc:"CTM — Cash to Master",        prov:"(Cash disbursement)",          pda:"4,500", fda:"4,500", dif:"0",    inv:true,  invLbl:"CTM-RCPT-001"},
+    // SPARES
+    {group:"SPARES",   svc:"Spare parts handling",        prov:"Almacen Huelva",               pda:"400",   fda:"-",     dif:"-",    inv:false, invLbl:""},
+    {group:"",         svc:"T1 transit docs",             prov:"Broker Aduanas Huelva",        pda:"320",   fda:"-",     dif:"-",    inv:false, invLbl:""},
+    {group:"",         svc:"Airport collection (AGP)",    prov:"Broker Aduanas Aeropuerto",    pda:"180",   fda:"-",     dif:"-",    inv:false, invLbl:""},
+    // AGENCY
+    {group:"AGENCY",   svc:"Agency fees",                 prov:"AMADESAM",                     pda:"4,500", fda:"4,500", dif:"0",    inv:true,  invLbl:"AMAD-2026-014"},
+  ];
+
+  var lastGroup="";
+  var rows=pdaRows.map(function(row){
+    var groupCell="";
+    if(row.group&&row.group!==lastGroup){
+      lastGroup=row.group;
+      groupCell="<td "+td+" rowspan='1' style='padding:6px 8px;font-size:9px;letter-spacing:.08em;color:var(--sea);font-weight:700;font-family:monospace;white-space:nowrap'>"+row.group+"</td>";
+    } else {
+      groupCell="<td "+td+"></td>";
+    }
     return "<tr>"
-      +"<td "+td+">"+row.svc+"</td>"
-      +"<td "+td+" style='color:var(--muted);font-size:11px'>"+row.prov+"</td>"
+      +groupCell
+      +"<td "+td+">"+agH(row.svc)+"</td>"
+      +"<td "+td+" style='color:var(--muted);font-size:11px'>"+agH(row.prov)+"</td>"
       +"<td "+td+">\u20AC "+row.pda+"</td>"
-      +"<td "+td+" style='"+diffStyle+"'>"+(row.fda==="-"?"<span style='color:var(--muted)'>-</span>":"\u20AC "+row.fda)+"</td>"
-      +"<td "+td+" style='"+diffStyle+"'>"+(row.dif==="-"?"<span style='color:var(--muted)'>-</span>":(row.dif.startsWith("-")?"\u20AC "+row.dif:"\u20AC "+row.dif))+"</td>"
-      +"<td "+td+">"+invCell+"</td>"
+      +"<td "+td+">"+(row.fda==="-"?"<span style='color:var(--muted)'>-</span>":"\u20AC "+row.fda)+"</td>"
+      +"<td "+td+">"+diffCell(row.dif==="0"?"\u20AC 0":row.dif==="-"?"-":"\u20AC "+row.dif)+"</td>"
+      +"<td "+td+">"+invBtn(row.inv,row.invLbl)+"</td>"
       +"</tr>";
   }).join("");
 
-  var table="<div class='ag-table-wrap'>"
+  var table="<div style='display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start'>"
+
+    // LEFT: PDA/FDA table
+    +"<div>"
+    +"<div class='ag-table-wrap'>"
     +"<table style='width:100%;border-collapse:collapse;font-size:12px'>"
     +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
+    +"<th "+th+">GROUP</th>"
     +"<th "+th+">SERVICE</th>"
     +"<th "+th+">SUPPLIER</th>"
-    +"<th "+th+">ESTIMATED (PDA)</th>"
-    +"<th "+th+">ACTUAL (FDA)</th>"
-    +"<th "+th+">DIFF.</th>"
+    +"<th "+th+">PDA</th>"
+    +"<th "+th+">FDA</th>"
+    +"<th "+th+">DIFF</th>"
     +"<th "+th+">INVOICE</th>"
     +"</tr></thead>"
     +"<tbody>"+rows+"</tbody>"
     +"</table></div>"
-    +"<p style='font-size:10px;color:var(--muted);margin:6px 0 0;font-family:monospace'>"
-    +"INVOICE: attach supplier invoices to each line. Click a received invoice to view it. All invoices must be attached before marking as billable.</p>";
+    +"<p style='font-size:10px;color:var(--muted);margin:6px 0 0;font-family:monospace'>Attach supplier invoices via OCR (+OCR button). Received invoices shown in green. All invoices must be attached before marking as billable.</p>"
+    +"</div>"
 
-  // ── ACTIONS ──
+    // RIGHT: Invoice repository panel
+    +"<div>"
+    +"<div style='background:var(--navy);border-radius:8px;padding:14px'>"
+    +"<p style='font-size:10px;letter-spacing:.08em;color:#B9C2CC;font-family:monospace;margin:0 0 10px'>INVOICE REPOSITORY</p>"
+    +[
+      {id:"APH-2026-1124",desc:"Port dues",amount:"\u20AC 9,400",date:"12/07"},
+      {id:"PRAC-0871A",   desc:"Pilotage",  amount:"\u20AC 3,680",date:"14/07"},
+      {id:"PRAC-0871B",   desc:"Tugs",      amount:"\u20AC 2,300",date:"14/07"},
+      {id:"TAXI-0341A",   desc:"Taxi ON",   amount:"\u20AC 165",  date:"14/07"},
+      {id:"HOTEL-0088",   desc:"Hotel ON",  amount:"\u20AC 356",  date:"15/07"},
+      {id:"CTM-RCPT-001", desc:"CTM",       amount:"\u20AC 4,500",date:"14/07"},
+      {id:"AMAD-2026-014",desc:"Agency fees",amount:"\u20AC 4,500",date:"15/07"},
+    ].map(function(inv){
+      return "<div style='display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07)'>"
+        +"<div>"
+        +"<div style='font-size:11px;font-weight:700;color:#fff;font-family:monospace'>"+inv.id+"</div>"
+        +"<div style='font-size:10px;color:#9BA8B4'>"+inv.desc+" \u00B7 "+inv.date+"</div>"
+        +"</div>"
+        +"<div style='text-align:right'>"
+        +"<div style='font-size:11px;color:#10b981;font-weight:700'>"+inv.amount+"</div>"
+        +"<button style='font-size:9px;padding:2px 6px;border:1px solid rgba(255,255,255,.15);border-radius:3px;background:none;color:#9BA8B4;cursor:pointer;margin-top:2px'>View PDF</button>"
+        +"</div>"
+        +"</div>";
+    }).join("")
+    +"<div style='margin-top:12px;border-top:1px solid rgba(255,255,255,.07);padding-top:10px'>"
+    +"<p style='font-size:10px;color:#9BA8B4;font-family:monospace;margin:0 0 8px'>ADD INVOICE</p>"
+    +"<div class='ag-ocr-drop' style='border-color:rgba(255,255,255,.15);color:#9BA8B4;padding:14px;background:rgba(255,255,255,.03)'>Drop invoice PDF or image<br>OCR will extract amount &amp; supplier</div>"
+    +"<button style='width:100%;margin-top:8px;padding:7px;background:rgba(8,126,164,.3);border:1px solid rgba(8,126,164,.5);border-radius:5px;color:#7FD4DC;font-size:11px;font-family:monospace;cursor:pointer'>\uD83D\uDCF7 Simulate OCR Read</button>"
+    +"</div>"
+    +"</div>"
+    +"</div>"
+
+    +"</div>";
+
   var actions="<div class='toolbar' style='margin-top:14px'>"
-    +"<button class='btn' data-agtemplate='PDA Cliente'>&#x2709; Send PDA to client</button>"
-    +"<button class='btn' data-agtemplate='FDA a facturacion'>&#x2709; Send FDA to billing</button>"
-    +"<button class='btn primary' data-agaction='marcarFacturado'>Mark as Billable &#x2192;</button>"
+    +"<button class='btn' data-agtemplate='PDA Cliente'>\u2709 Send PDA to client</button>"
+    +"<button class='btn' data-agtemplate='FDA a facturacion'>\u2709 Send FDA to billing</button>"
+    +"<button class='btn primary' data-agaction='marcarFacturado'>Mark as Billable \u2192</button>"
     +"</div>";
 
   return kpis+table+actions;
