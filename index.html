@@ -3335,120 +3335,121 @@ function agTabPda(){
   var th="style='padding:7px 8px;white-space:nowrap;font-size:10px'";
   var td="style='padding:6px 8px;font-size:11px'";
 
-  // ── Invoice button helper ──
+  // ── Invoice button — clickable to preview ──
   function invBtn(received,label){
     if(received)
-      return "<button style='font-size:10px;padding:3px 8px;border:1px solid #10b981;border-radius:4px;background:#e7f8f1;color:#10b981;cursor:pointer' title='View invoice'>\uD83D\uDCCE "+agH(label)+"</button>";
-    return "<button style='font-size:10px;padding:3px 8px;border:1px dashed var(--line);border-radius:4px;background:none;color:var(--muted);cursor:pointer' title='Attach invoice via OCR'>+ OCR</button>";
-  }
-  function diffCell(v){
-    if(v==="-") return "<span style='color:var(--muted)'>-</span>";
-    if(v.startsWith("-")) return "<span style='color:#ef4444;font-weight:700'>"+v+"</span>";
-    return v;
+      return "<button onclick=\"agPreviewInvoice('"+agH(label)+"')\" "
+        +"style='font-size:10px;padding:3px 8px;border:1px solid #10b981;border-radius:4px;background:#e7f8f1;color:#10b981;cursor:pointer' "
+        +"title='Click to preview invoice'>\uD83D\uDCCE "+agH(label)+"</button>";
+    return "<button onclick=\"agAttachInvoice(this)\" "
+      +"style='font-size:10px;padding:3px 8px;border:1px dashed var(--line);border-radius:4px;background:none;color:var(--muted);cursor:pointer' "
+      +"title='Attach invoice via OCR'>+ OCR</button>";
   }
 
-  // ── KPIs ──
+  // ── Editable FDA amount ──
+  function fdaInput(val,rowId){
+    if(val==="-")
+      return "<input placeholder='0' value='' data-fda-row='"+rowId+"' "
+        +"oninput='agRecalcFda()' "
+        +"style='width:70px;padding:3px 5px;border:1px solid var(--line);border-radius:4px;font-size:11px;font-family:monospace;text-align:right'>";
+    return "<input value='"+val+"' data-fda-row='"+rowId+"' "
+      +"oninput='agRecalcFda()' "
+      +"style='width:70px;padding:3px 5px;border:1px solid var(--line);border-radius:4px;font-size:11px;font-family:monospace;text-align:right'>";
+  }
+
+  function diffCell(pda,fda){
+    if(!fda||fda==="-") return "<span style='color:var(--muted)'>-</span>";
+    var p=parseFloat(String(pda).replace(/[,.]/g,''))||0;
+    var f=parseFloat(String(fda).replace(/[,.]/g,''))||0;
+    var d=f-p;
+    if(d===0) return "<span style='color:var(--muted)'>\u20AC 0</span>";
+    var color=d<0?"#ef4444":"#10b981";
+    var sign=d<0?"":"+";
+    return "<span style='color:"+color+";font-weight:700'>"+sign+"\u20AC "+d.toLocaleString('es-ES')+"</span>";
+  }
+
   var kpis="<div style='display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px'>"
-    +"<div class='ag-kpi'><div class='l'>PDA SENT</div><div class='v'>\u20AC 48,200</div></div>"
-    +"<div class='ag-kpi'><div class='l'>FDA ESTIMATED</div><div class='v'>\u20AC 46,730</div></div>"
+    +"<div class='ag-kpi'><div class='l'>PDA SENT</div><div class='v' id='agKpiPda'>\u20AC 48,200</div></div>"
+    +"<div class='ag-kpi'><div class='l'>FDA ESTIMATED</div><div class='v' id='agKpiFda'>\u20AC 46,730</div></div>"
     +"<div class='ag-kpi'><div class='l'>SUPPLIER COSTS</div><div class='v'>\u20AC 38,910</div></div>"
-    +"<div class='ag-kpi'><div class='l'>PROFIT / RTB</div><div class='v pos'>\u20AC 7,820</div></div>"
+    +"<div class='ag-kpi'><div class='l'>PROFIT / RTB</div><div class='v pos' id='agKpiProfit'>\u20AC 7,820</div></div>"
     +"</div>";
 
-  // ── PDA ROWS — fully desglosed ──
   var pdaRows=[
-    // PORT DUES
-    {group:"PORT DUES",svc:"Port dues (GT-based)",        prov:"Autoridad Portuaria Huelva",  pda:"9,400", fda:"9,400", dif:"0",    inv:true,  invLbl:"APH-2026-1124"},
-    {group:"",         svc:"Pilotage",                    prov:"Practicaje Huelva",            pda:"3,800", fda:"3,680", dif:"-120", inv:true,  invLbl:"PRAC-0871A"},
-    {group:"",         svc:"Tugs (2 tugs x 2 manoeuvres)",prov:"Practicaje Huelva",            pda:"2,350", fda:"2,300", dif:"-50",  inv:true,  invLbl:"PRAC-0871B"},
-    {group:"",         svc:"Mooring / unmooring",         prov:"Amarradores Huelva",           pda:"420",   fda:"420",   dif:"0",    inv:false, invLbl:""},
-    // CREWING
-    {group:"CREWING",  svc:"Taxi — ON signers (3 pax)",   prov:"Taxi Huelva",                  pda:"180",   fda:"165",   dif:"-15",  inv:true,  invLbl:"TAXI-0341A"},
-    {group:"",         svc:"Taxi — OFF signers (2 pax)",  prov:"Taxi Huelva",                  pda:"120",   fda:"110",   dif:"-10",  inv:false, invLbl:""},
-    {group:"",         svc:"Taxi — Immigration (3 pax)",  prov:"Taxi Huelva",                  pda:"90",    fda:"-",     dif:"-",    inv:false, invLbl:""},
-    {group:"",         svc:"Hotel ON signers (2 pax x 2n)",prov:"Hotel Luz Huelva",            pda:"356",   fda:"356",   dif:"0",    inv:true,  invLbl:"HOTEL-0088"},
-    {group:"",         svc:"Hotel OFF signers",           prov:"Hotel Luz Huelva",             pda:"178",   fda:"-",     dif:"-",    inv:false, invLbl:""},
-    {group:"",         svc:"CTM — Cash to Master",        prov:"(Cash disbursement)",          pda:"4,500", fda:"4,500", dif:"0",    inv:true,  invLbl:"CTM-RCPT-001"},
-    // SPARES
-    {group:"SPARES",   svc:"Spare parts handling",        prov:"Almacen Huelva",               pda:"400",   fda:"-",     dif:"-",    inv:false, invLbl:""},
-    {group:"",         svc:"T1 transit docs",             prov:"Broker Aduanas Huelva",        pda:"320",   fda:"-",     dif:"-",    inv:false, invLbl:""},
-    {group:"",         svc:"Airport collection (AGP)",    prov:"Broker Aduanas Aeropuerto",    pda:"180",   fda:"-",     dif:"-",    inv:false, invLbl:""},
-    // AGENCY
-    {group:"AGENCY",   svc:"Agency fees",                 prov:"AMADESAM",                     pda:"4,500", fda:"4,500", dif:"0",    inv:true,  invLbl:"AMAD-2026-014"},
+    {id:"r1", group:"PORT DUES", svc:"Port dues (GT-based)",        prov:"Autoridad Portuaria Huelva",  pda:"9,400", fda:"9,400", inv:true,  invLbl:"APH-2026-1124"},
+    {id:"r2", group:"",         svc:"Pilotage",                     prov:"Practicaje Huelva",            pda:"3,800", fda:"3,680", inv:true,  invLbl:"PRAC-0871A"},
+    {id:"r3", group:"",         svc:"Tugs (2 tugs x 2 manoeuvres)", prov:"Practicaje Huelva",            pda:"2,350", fda:"2,300", inv:true,  invLbl:"PRAC-0871B"},
+    {id:"r4", group:"",         svc:"Mooring / unmooring",          prov:"Amarradores Huelva",           pda:"420",   fda:"420",   inv:false, invLbl:""},
+    {id:"r5", group:"CREWING",  svc:"Taxi \u2014 ON signers (3 pax)", prov:"Taxi Huelva",                pda:"180",   fda:"165",   inv:true,  invLbl:"TAXI-0341A"},
+    {id:"r6", group:"",         svc:"Taxi \u2014 OFF signers (2 pax)",prov:"Taxi Huelva",                pda:"120",   fda:"110",   inv:false, invLbl:""},
+    {id:"r7", group:"",         svc:"Taxi \u2014 Immigration (3 pax)",prov:"Taxi Huelva",                pda:"90",    fda:"-",     inv:false, invLbl:""},
+    {id:"r8", group:"",         svc:"Hotel ON signers (2 pax x 2n)",prov:"Hotel Luz Huelva",             pda:"356",   fda:"356",   inv:true,  invLbl:"HOTEL-0088"},
+    {id:"r9", group:"",         svc:"Hotel OFF signers",            prov:"Hotel Luz Huelva",             pda:"178",   fda:"-",     inv:false, invLbl:""},
+    {id:"r10",group:"",         svc:"CTM \u2014 Cash to Master",     prov:"(Cash disbursement)",          pda:"4,500", fda:"4,500", inv:true,  invLbl:"CTM-RCPT-001"},
+    {id:"r11",group:"SPARES",   svc:"Spare parts handling",         prov:"Almacen Huelva",               pda:"400",   fda:"-",     inv:false, invLbl:""},
+    {id:"r12",group:"",         svc:"T1 transit docs",              prov:"Broker Aduanas Huelva",        pda:"320",   fda:"-",     inv:false, invLbl:""},
+    {id:"r13",group:"",         svc:"Airport collection (AGP)",     prov:"Broker Aduanas Aeropuerto",    pda:"180",   fda:"-",     inv:false, invLbl:""},
+    {id:"r14",group:"AGENCY",   svc:"Agency fees",                  prov:"AMADESAM",                     pda:"4,500", fda:"4,500", inv:true,  invLbl:"AMAD-2026-014"},
   ];
 
-  var lastGroup="";
   var rows=pdaRows.map(function(row){
-    var groupCell="";
-    if(row.group&&row.group!==lastGroup){
-      lastGroup=row.group;
-      groupCell="<td "+td+" rowspan='1' style='padding:6px 8px;font-size:9px;letter-spacing:.08em;color:var(--sea);font-weight:700;font-family:monospace;white-space:nowrap'>"+row.group+"</td>";
-    } else {
-      groupCell="<td "+td+"></td>";
-    }
     return "<tr>"
-      +groupCell
+      +"<td "+td+" style='padding:6px 8px;font-size:9px;letter-spacing:.08em;color:var(--sea);font-weight:700;font-family:monospace;white-space:nowrap'>"+(row.group||"")+"</td>"
       +"<td "+td+">"+agH(row.svc)+"</td>"
       +"<td "+td+" style='color:var(--muted);font-size:11px'>"+agH(row.prov)+"</td>"
-      +"<td "+td+">\u20AC "+row.pda+"</td>"
-      +"<td "+td+">"+(row.fda==="-"?"<span style='color:var(--muted)'>-</span>":"\u20AC "+row.fda)+"</td>"
-      +"<td "+td+">"+diffCell(row.dif==="0"?"\u20AC 0":row.dif==="-"?"-":"\u20AC "+row.dif)+"</td>"
+      +"<td "+td+" style='text-align:right'>\u20AC "+row.pda+"</td>"
+      +"<td style='padding:6px 8px'>"+fdaInput(row.fda,row.id)+"</td>"
+      +"<td "+td+" style='text-align:right' data-diff-row='"+row.id+"' data-pda='"+row.pda+"'>"+diffCell(row.pda,row.fda)+"</td>"
       +"<td "+td+">"+invBtn(row.inv,row.invLbl)+"</td>"
       +"</tr>";
   }).join("");
 
-  var table="<div style='display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start'>"
+  var invoices=[
+    {id:"APH-2026-1124",desc:"Port dues",  amount:"\u20AC 9,400",date:"12/07",supplier:"Autoridad Portuaria Huelva"},
+    {id:"PRAC-0871A",   desc:"Pilotage",   amount:"\u20AC 3,680",date:"14/07",supplier:"Practicaje Huelva"},
+    {id:"PRAC-0871B",   desc:"Tugs",       amount:"\u20AC 2,300",date:"14/07",supplier:"Practicaje Huelva"},
+    {id:"TAXI-0341A",   desc:"Taxi ON",    amount:"\u20AC 165",  date:"14/07",supplier:"Taxi Huelva"},
+    {id:"HOTEL-0088",   desc:"Hotel ON",   amount:"\u20AC 356",  date:"15/07",supplier:"Hotel Luz Huelva"},
+    {id:"CTM-RCPT-001", desc:"CTM",        amount:"\u20AC 4,500",date:"14/07",supplier:"Cash disbursement"},
+    {id:"AMAD-2026-014",desc:"Agency fees",amount:"\u20AC 4,500",date:"15/07",supplier:"AMADESAM"},
+  ];
 
-    // LEFT: PDA/FDA table
-    +"<div>"
-    +"<div class='ag-table-wrap'>"
-    +"<table style='width:100%;border-collapse:collapse;font-size:12px'>"
-    +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
-    +"<th "+th+">GROUP</th>"
-    +"<th "+th+">SERVICE</th>"
-    +"<th "+th+">SUPPLIER</th>"
-    +"<th "+th+">PDA</th>"
-    +"<th "+th+">FDA</th>"
-    +"<th "+th+">DIFF</th>"
-    +"<th "+th+">INVOICE</th>"
-    +"</tr></thead>"
-    +"<tbody>"+rows+"</tbody>"
-    +"</table></div>"
-    +"<p style='font-size:10px;color:var(--muted);margin:6px 0 0;font-family:monospace'>Attach supplier invoices via OCR (+OCR button). Received invoices shown in green. All invoices must be attached before marking as billable.</p>"
-    +"</div>"
-
-    // RIGHT: Invoice repository panel
-    +"<div>"
-    +"<div style='background:var(--navy);border-radius:8px;padding:14px'>"
+  var repo="<div style='background:var(--navy);border-radius:8px;padding:14px'>"
     +"<p style='font-size:10px;letter-spacing:.08em;color:#B9C2CC;font-family:monospace;margin:0 0 10px'>INVOICE REPOSITORY</p>"
-    +[
-      {id:"APH-2026-1124",desc:"Port dues",amount:"\u20AC 9,400",date:"12/07"},
-      {id:"PRAC-0871A",   desc:"Pilotage",  amount:"\u20AC 3,680",date:"14/07"},
-      {id:"PRAC-0871B",   desc:"Tugs",      amount:"\u20AC 2,300",date:"14/07"},
-      {id:"TAXI-0341A",   desc:"Taxi ON",   amount:"\u20AC 165",  date:"14/07"},
-      {id:"HOTEL-0088",   desc:"Hotel ON",  amount:"\u20AC 356",  date:"15/07"},
-      {id:"CTM-RCPT-001", desc:"CTM",       amount:"\u20AC 4,500",date:"14/07"},
-      {id:"AMAD-2026-014",desc:"Agency fees",amount:"\u20AC 4,500",date:"15/07"},
-    ].map(function(inv){
-      return "<div style='display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07)'>"
+    +invoices.map(function(inv){
+      return "<div onclick=\"agPreviewInvoice('"+inv.id+"')\" "
+        +"style='display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07);cursor:pointer' "
+        +"onmouseover=\"this.style.background='rgba(255,255,255,.04)'\" onmouseout=\"this.style.background='transparent'\">"
         +"<div>"
         +"<div style='font-size:11px;font-weight:700;color:#fff;font-family:monospace'>"+inv.id+"</div>"
         +"<div style='font-size:10px;color:#9BA8B4'>"+inv.desc+" \u00B7 "+inv.date+"</div>"
         +"</div>"
         +"<div style='text-align:right'>"
         +"<div style='font-size:11px;color:#10b981;font-weight:700'>"+inv.amount+"</div>"
-        +"<button style='font-size:9px;padding:2px 6px;border:1px solid rgba(255,255,255,.15);border-radius:3px;background:none;color:#9BA8B4;cursor:pointer;margin-top:2px'>View PDF</button>"
-        +"</div>"
-        +"</div>";
+        +"<span style='font-size:9px;color:#9BA8B4'>View PDF \u2192</span>"
+        +"</div></div>";
     }).join("")
     +"<div style='margin-top:12px;border-top:1px solid rgba(255,255,255,.07);padding-top:10px'>"
     +"<p style='font-size:10px;color:#9BA8B4;font-family:monospace;margin:0 0 8px'>ADD INVOICE</p>"
     +"<div class='ag-ocr-drop' style='border-color:rgba(255,255,255,.15);color:#9BA8B4;padding:14px;background:rgba(255,255,255,.03)'>Drop invoice PDF or image<br>OCR will extract amount &amp; supplier</div>"
-    +"<button style='width:100%;margin-top:8px;padding:7px;background:rgba(8,126,164,.3);border:1px solid rgba(8,126,164,.5);border-radius:5px;color:#7FD4DC;font-size:11px;font-family:monospace;cursor:pointer'>\uD83D\uDCF7 Simulate OCR Read</button>"
-    +"</div>"
-    +"</div>"
-    +"</div>"
+    +"<button onclick='agSimulateOcrInvoice()' style='width:100%;margin-top:8px;padding:7px;background:rgba(8,126,164,.3);border:1px solid rgba(8,126,164,.5);border-radius:5px;color:#7FD4DC;font-size:11px;font-family:monospace;cursor:pointer'>\uD83D\uDCF7 Simulate OCR Read</button>"
+    +"</div></div>";
 
+  var table="<div style='display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start'>"
+    +"<div>"
+    +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:12px'>"
+    +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
+    +"<th "+th+">GROUP</th><th "+th+">SERVICE</th><th "+th+">SUPPLIER</th>"
+    +"<th "+th+" style='text-align:right'>PDA</th>"
+    +"<th "+th+">FDA (editable)</th>"
+    +"<th "+th+" style='text-align:right'>DIFF</th>"
+    +"<th "+th+">INVOICE</th>"
+    +"</tr></thead><tbody>"+rows+"</tbody></table></div>"
+    +"<p style='font-size:10px;color:var(--muted);margin:6px 0 0;font-family:monospace'>"
+    +"<b>FDA</b>: editable \u2014 type the actual invoiced amount, DIFF recalculates automatically. "
+    +"<b>INVOICE</b>: click a green invoice to preview it, or +OCR to attach.</p>"
+    +"</div>"
+    +repo
     +"</div>";
 
   var actions="<div class='toolbar' style='margin-top:14px'>"
@@ -3458,6 +3459,96 @@ function agTabPda(){
     +"</div>";
 
   return kpis+table+actions;
+}
+
+// ── INVOICE PREVIEW MODAL ──
+function agPreviewInvoice(invId){
+  var invData={
+    "APH-2026-1124":{supplier:"Autoridad Portuaria de Huelva",amount:"9,400.00",date:"12/07/2026",concept:"Tasa de buque \u2014 M/V NORDIC ESTRELLA",vat:"21%",total:"11,374.00",ref:"HUE-26-009"},
+    "PRAC-0871A":{supplier:"Practicaje Puerto de Huelva",amount:"3,680.00",date:"14/07/2026",concept:"Servicio de practicaje \u2014 entrada y salida",vat:"21%",total:"4,452.80",ref:"HUE-26-009"},
+    "PRAC-0871B":{supplier:"Practicaje Puerto de Huelva",amount:"2,300.00",date:"14/07/2026",concept:"Remolcadores \u2014 2 unidades x 2 maniobras",vat:"21%",total:"2,783.00",ref:"HUE-26-009"},
+    "TAXI-0341A":{supplier:"Taxi Huelva S.L.",amount:"165.00",date:"14/07/2026",concept:"Traslado tripulantes ON signers \u2014 3 pax aeropuerto-puerto",vat:"10%",total:"181.50",ref:"HUE-26-009"},
+    "HOTEL-0088":{supplier:"Hotel Luz Huelva",amount:"356.00",date:"15/07/2026",concept:"Alojamiento 2 pax x 2 noches \u2014 tarifa convenio",vat:"10%",total:"391.60",ref:"HUE-26-009"},
+    "CTM-RCPT-001":{supplier:"Cash disbursement",amount:"4,500.00",date:"14/07/2026",concept:"Cash to Master \u2014 entrega a bordo",vat:"Exento",total:"4,500.00",ref:"HUE-26-009"},
+    "AMAD-2026-014":{supplier:"AMADESAM",amount:"4,500.00",date:"15/07/2026",concept:"Honorarios de agencia \u2014 escala Husbandry",vat:"21%",total:"5,445.00",ref:"HUE-26-009"},
+  };
+  var d=invData[invId]||{supplier:"\u2014",amount:"\u2014",date:"\u2014",concept:"\u2014",vat:"\u2014",total:"\u2014",ref:"\u2014"};
+  var inner=ag$('#agModal');var modal=ag$('#agModalBg');
+  if(!inner||!modal)return;
+  inner.innerHTML="<div class='section'><div><h3>\uD83D\uDCCE "+agH(invId)+"</h3>"
+    +"<p class='muted' style='font-size:12px'>Factura de proveedor \u00B7 Vista previa</p></div>"
+    +"<button class='btn' data-agaction='closeModal'>X</button></div>"
+    +"<div style='background:#fff;border:1px solid var(--line);border-radius:8px;padding:20px;margin:12px 0;font-family:monospace;font-size:12px'>"
+    +"<div style='border-bottom:2px solid var(--navy);padding-bottom:10px;margin-bottom:12px'>"
+    +"<div style='font-size:16px;font-weight:700;color:var(--navy)'>"+agH(d.supplier)+"</div>"
+    +"<div style='font-size:11px;color:var(--muted);margin-top:2px'>Factura N\u00BA "+agH(invId)+" \u00B7 "+agH(d.date)+"</div>"
+    +"</div>"
+    +"<table style='width:100%;border-collapse:collapse'>"
+    +"<tr><td style='padding:5px 0;color:var(--muted)'>Referencia escala</td><td style='text-align:right;font-weight:700'>"+agH(d.ref)+"</td></tr>"
+    +"<tr><td style='padding:5px 0;color:var(--muted)'>Concepto</td><td style='text-align:right'>"+agH(d.concept)+"</td></tr>"
+    +"<tr><td style='padding:5px 0;color:var(--muted)'>Base imponible</td><td style='text-align:right;font-weight:700'>\u20AC "+agH(d.amount)+"</td></tr>"
+    +"<tr><td style='padding:5px 0;color:var(--muted)'>IVA</td><td style='text-align:right'>"+agH(d.vat)+"</td></tr>"
+    +"<tr style='border-top:1px solid var(--line)'><td style='padding:8px 0;font-weight:700'>TOTAL</td>"
+    +"<td style='text-align:right;font-weight:700;font-size:15px;color:var(--navy)'>\u20AC "+agH(d.total)+"</td></tr>"
+    +"</table></div>"
+    +"<div class='toolbar' style='justify-content:flex-end;gap:8px'>"
+    +"<button class='btn' data-agaction='closeModal'>Cerrar</button>"
+    +"<button class='btn primary' onclick='toast(\"Descarga simulada de \\\""+agH(invId)+"\\\"\")'>\u2B07 Descargar PDF</button>"
+    +"</div>";
+  modal.classList.add('open');
+}
+
+function agAttachInvoice(btn){
+  var inner=ag$('#agModal');var modal=ag$('#agModalBg');
+  if(!inner||!modal)return;
+  inner.innerHTML="<div class='section'><div><h3>Adjuntar factura \u2014 OCR</h3></div>"
+    +"<button class='btn' data-agaction='closeModal'>X</button></div>"
+    +"<div class='ag-ocr-drop'><b>Arrastra la factura del proveedor</b><br>PDF o imagen. El OCR extraer\u00E1 importe, proveedor y fecha.</div>"
+    +"<div class='ag-ocr-extract show'>\u2713 Ejemplo: AMARR-0412 \u00B7 Amarradores Huelva \u00B7 \u20AC 420,00 \u00B7 14/07/2026</div>"
+    +"<div class='toolbar' style='margin-top:14px;justify-content:flex-end'>"
+    +"<button class='btn' data-agaction='closeModal'>Cancelar</button>"
+    +"<button class='btn primary' data-agaction='closeModal' onclick='toast(\"Factura adjuntada al expediente.\")'>Adjuntar</button>"
+    +"</div>";
+  modal.classList.add('open');
+}
+
+function agSimulateOcrInvoice(){
+  toast("OCR le\u00EDdo: AMARR-0412 \u00B7 Amarradores Huelva \u00B7 \u20AC 420,00");
+}
+
+function agRecalcFda(){
+  var total=0;
+  document.querySelectorAll('[data-fda-row]').forEach(function(inp){
+    var v=parseFloat(String(inp.value).replace(/[,.]/g,''))||0;
+    total+=v;
+    // Update diff for this row
+    var rowId=inp.dataset.fdaRow;
+    var diffCell=document.querySelector('[data-diff-row="'+rowId+'"]');
+    if(diffCell){
+      var pda=parseFloat(String(diffCell.dataset.pda).replace(/[,.]/g,''))||0;
+      if(!inp.value){
+        diffCell.innerHTML="<span style='color:var(--muted)'>-</span>";
+      } else {
+        var d=v-pda;
+        if(d===0){
+          diffCell.innerHTML="<span style='color:var(--muted)'>\u20AC 0</span>";
+        } else {
+          var color=d<0?"#ef4444":"#10b981";
+          var sign=d<0?"":"+";
+          diffCell.innerHTML="<span style='color:"+color+";font-weight:700'>"+sign+"\u20AC "+d.toLocaleString('es-ES')+"</span>";
+        }
+      }
+    }
+  });
+  var fdaKpi=document.getElementById('agKpiFda');
+  if(fdaKpi)fdaKpi.textContent="\u20AC "+total.toLocaleString('es-ES');
+  var profitKpi=document.getElementById('agKpiProfit');
+  if(profitKpi){
+    var costs=38910;
+    var profit=total-costs;
+    profitKpi.textContent="\u20AC "+profit.toLocaleString('es-ES');
+    profitKpi.className=profit>=0?'v pos':'v neg';
+  }
 }
 
 // ── EXPEDIENTE ──
