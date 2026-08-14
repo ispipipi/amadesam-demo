@@ -2595,6 +2595,30 @@ function agChk(label,done){
     +"><div class='box'>"+(done?"\u2713":"")+"</div>"
     +"<span>"+agH(label)+"</span></div>";
 }
+function agToggleDocs(el){
+  var ok=el.dataset.docsOk==="1";
+  var newOk=!ok;
+  el.dataset.docsOk=newOk?"1":"";
+  el.textContent=newOk?"✓":"Pdte.";
+  el.style.cssText=(newOk
+    ?"background:#e7f8f1;color:#10b981;font-weight:700"
+    :"background:#fff7e8;color:#f59e0b")
+    +";border-radius:4px;padding:2px 10px;font-size:11px;font-family:monospace;cursor:pointer";
+}
+function agCycleReception(el){
+  var states=["received","pending","na"];
+  var labels={received:"✓ Received",pending:"Pending",na:"N/A"};
+  var styles={
+    received:"background:#e7f8f1;color:#10b981;font-weight:700",
+    pending:"background:#fff7e8;color:#f59e0b",
+    na:"background:#f4f8fa;color:#94a3b8"
+  };
+  var cur=el.dataset.recState||"pending";
+  var next=states[(states.indexOf(cur)+1)%states.length];
+  el.dataset.recState=next;
+  el.textContent=labels[next];
+  el.style.cssText=styles[next]+";border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;cursor:pointer";
+}
 function agCycleT1(el){
   var states=["ok","pending","na"];
   var labels={ok:"✓ OK",pending:"Pending",na:"N/A"};
@@ -3201,7 +3225,7 @@ function agTabLogistics(){
   var th="style='padding:7px 8px;white-space:nowrap;font-size:10px'";
   var td="style='padding:6px 8px;font-size:11px'";
 
-  // ── T1 helper: 3 states — green / pending / N/A — clickable to cycle ──
+  // ── T1: 3 states — clickable to cycle ──
   function t1Cell(state){
     var styles={
       ok:"background:#e7f8f1;color:#10b981;font-weight:700",
@@ -3211,12 +3235,63 @@ function agTabLogistics(){
     var labels={ok:"\u2713 OK",pending:"Pending",na:"N/A"};
     var s=state||'pending';
     return "<span style='"+styles[s]+";border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;cursor:pointer' "
-      +"onclick='agCycleT1(this)' data-t1-state='"+s+"' title='Click to toggle: OK \u2192 Pending \u2192 N/A'>"+labels[s]+"</span>";
+      +"onclick='agCycleT1(this)' data-t1-state='"+s+"' title='Click: OK \u2192 Pending \u2192 N/A'>"+labels[s]+"</span>";
   }
 
-  // ── SPARE PARTS ──
+  // ── DOCS/INV: 2 states — clickable toggle ──
+  function docsCell(ok){
+    var style=ok
+      ?"background:#e7f8f1;color:#10b981;font-weight:700"
+      :"background:#fff7e8;color:#f59e0b";
+    var label=ok?"\u2713":"Pdte.";
+    return "<span style='"+style+";border-radius:4px;padding:2px 10px;font-size:11px;font-family:monospace;cursor:pointer' "
+      +"onclick='agToggleDocs(this)' data-docs-ok='"+(ok?'1':'')+"' title='Click to toggle'>"+label+"</span>";
+  }
+
+  // ── RECEPTION: 3 states — clickable to cycle ──
+  function recCell(state){
+    var styles={
+      received:"background:#e7f8f1;color:#10b981;font-weight:700",
+      pending:"background:#fff7e8;color:#f59e0b",
+      na:"background:#f4f8fa;color:#94a3b8"
+    };
+    var labels={received:"\u2713 Received",pending:"Pending",na:"N/A"};
+    var s=state||'pending';
+    return "<span style='"+styles[s]+";border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;cursor:pointer' "
+      +"onclick='agCycleReception(this)' data-rec-state='"+s+"' title='Click: Received \u2192 Pending \u2192 N/A'>"+labels[s]+"</span>";
+  }
+
+  function collInput(val){
+    return "<input placeholder='e.g. SVQ 13/07' value='"+(val||'')+"' "
+      +"style='width:100px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11px;font-family:monospace'>";
+  }
+  function dateInput(val){
+    return "<input placeholder='DD/MM/YYYY' value='"+(val||'')+"' "
+      +"style='width:90px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11px;font-family:monospace'>";
+  }
+
+  var rows=[
+    {item:"Turbo cartridge \u2014 PO 2291", courier:"DHL / 881223410", pcs:"1",       weight:"38 kg",  origin:"Rotterdam", docs:true,  coll:"",           t1:"ok",      expiry:"31/12/2026", rec:"received", delivery:"Onboard 15/07"},
+    {item:"Filter kit M/E \u2014 PO 2295",  courier:"FedEx / 772891045", pcs:"2",     weight:"12 kg",  origin:"Hamburg",   docs:false, coll:"AGP 14/07",  t1:"pending", expiry:"",            rec:"pending",  delivery:"Onboard 15/07"},
+    {item:"Provisions \u2014 Dry stores",   courier:"Local supplier",   pcs:"14 boxes",weight:"310 kg",origin:"Huelva",    docs:true,  coll:"",           t1:"na",      expiry:"",            rec:"received", delivery:"14/07 11:00 \u2014 Muelle Sur 3"},
+  ].map(function(r){
+    return "<tr>"
+      +"<td "+td+">"+r.item+"</td>"
+      +"<td "+td+">"+r.courier+"</td>"
+      +"<td "+td+">"+r.pcs+"</td>"
+      +"<td "+td+">"+r.weight+"</td>"
+      +"<td "+td+">"+r.origin+"</td>"
+      +"<td style='padding:6px 8px;text-align:center'>"+docsCell(r.docs)+"</td>"
+      +"<td style='padding:6px 8px'>"+collInput(r.coll)+"</td>"
+      +"<td style='padding:6px 8px'>"+t1Cell(r.t1)+"</td>"
+      +"<td style='padding:6px 8px'>"+dateInput(r.expiry)+"</td>"
+      +"<td style='padding:6px 8px'>"+recCell(r.rec)+"</td>"
+      +"<td "+td+">"+r.delivery+"</td>"
+      +"</tr>";
+  }).join("");
+
   var spareHdr="<div class='ag-group-bar'>SPARE PARTS \u2014 TO RECEIVE</div>"
-    +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:11px'>"
+    +"<div class='ag-table-wrap' style='overflow-x:auto'><table style='width:100%;border-collapse:collapse;font-size:11px'>"
     +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
     +"<th "+th+">ITEM / ORDER</th>"
     +"<th "+th+">COURIER / AWB</th>"
@@ -3229,60 +3304,12 @@ function agTabLogistics(){
     +"<th "+th+">T1 EXPIRY</th>"
     +"<th "+th+">RECEPTION</th>"
     +"<th "+th+">DELIVERY</th>"
-    +"</tr></thead><tbody>"
-
-    // Row 1 — direct to warehouse, T1 ok, no collection
-    +"<tr>"
-    +"<td "+td+">Turbo cartridge \u2014 PO 2291</td>"
-    +"<td>DHL / 881223410</td>"
-    +"<td>1</td>"
-    +"<td>38 kg</td>"
-    +"<td>Rotterdam</td>"
-    +"<td class='ag-done-cell'>\u2713</td>"
-    +"<td style='padding:6px 8px'><input placeholder='e.g. SVQ 13/07' style='width:100px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11px;font-family:monospace'></td>"
-    +("<td style='padding:6px 8px'>"+t1Cell('ok')+"</td>")
-    +"<td style='padding:6px 8px;font-size:11px'>31/12/2026</td>"
-    +"<td class='ag-done-cell'>\u2713 Received</td>"
-    +"<td>Onboard 15/07</td>"
-    +"</tr>"
-
-    // Row 2 — via airport AGP, T1 pending
-    +"<tr>"
-    +"<td "+td+">Filter kit M/E \u2014 PO 2295</td>"
-    +"<td>FedEx / 772891045</td>"
-    +"<td>2</td>"
-    +"<td>12 kg</td>"
-    +"<td>Hamburg</td>"
-    +"<td style='padding:6px 8px;color:#f59e0b'>Pdte.</td>"
-    +"<td style='padding:6px 8px'><input placeholder='e.g. AGP 14/07' style='width:100px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11px;font-family:monospace' value='AGP 14/07'></td>"
-    +("<td style='padding:6px 8px'>"+t1Cell('pending')+"</td>")
-    +"<td style='padding:6px 8px;color:var(--muted);font-size:11px'>\u2014</td>"
-    +"<td>Pending</td>"
-    +"<td>Onboard 15/07</td>"
-    +"</tr>"
-
-    // Row 3 — N/A for T1
-    +"<tr>"
-    +"<td "+td+">Provisions \u2014 Dry stores</td>"
-    +"<td>Local supplier</td>"
-    +"<td>14 boxes</td>"
-    +"<td>310 kg</td>"
-    +"<td>Huelva</td>"
-    +"<td class='ag-done-cell'>\u2713</td>"
-    +"<td style='padding:6px 8px'><input placeholder='e.g. SVQ 13/07' style='width:100px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11px;font-family:monospace'></td>"
-    +("<td style='padding:6px 8px'>"+t1Cell('na')+"</td>")
-    +"<td style='padding:6px 8px;color:var(--muted);font-size:11px'>\u2014</td>"
-    +"<td class='ag-done-cell'>\u2713 Received</td>"
-    +"<td>14/07 11:00 \u2014 Muelle Sur 3</td>"
-    +"</tr>"
-
-    +"</tbody></table></div>"
-
+    +"</tr></thead><tbody>"+rows+"</tbody></table></div>"
     +"<p style='font-size:10px;color:var(--muted);margin:6px 0 0;font-family:monospace'>"
-    +"<b>COLLECTION</b>: airport code + date when goods must be collected before delivery to warehouse (e.g. AGP 14/07). Leave blank if shipped direct. "
-    +"<b>T1</b>: click state to toggle OK / Pending / N/A. Add expiry date when applicable.</p>";
+    +"<b>DOCS/INV</b>, <b>T1</b> and <b>RECEPTION</b>: click to toggle state. "
+    +"<b>COLLECTION</b>: type airport code + date (e.g. AGP 14/07) when goods must be collected before warehouse delivery. "
+    +"<b>T1 EXPIRY</b>: editable date field.</p>";
 
-  // ── PROVISIONS ──
   var provisions="<div class='ag-group-bar' style='margin-top:16px'>OTHER SERVICES \u2014 PROVISIONS</div>"
     +"<div class='ag-table-wrap'><table style='width:100%;border-collapse:collapse;font-size:11px'>"
     +"<thead style='background:var(--navy);color:#B9C2CC'><tr>"
@@ -3292,11 +3319,10 @@ function agTabLogistics(){
     +"<tbody><tr>"
     +"<td "+td+">Provision fresh + dry stores</td>"
     +"<td>14 boxes</td><td>310 kg</td><td>Local</td>"
-    +"<td class='ag-done-cell'>\u2713</td>"
+    +"<td style='padding:6px 8px;text-align:center'>"+docsCell(true)+"</td>"
     +"<td>14/07 11:00 \u2014 Muelle Sur 3</td>"
     +"</tr></tbody></table></div>";
 
-  // ── EMAIL / ACTION BUTTONS ──
   var btns=["Almacen Huelva","Broker Aduanas Huelva","Broker Aduanas Aeropuerto","Transportista Huelva","Courier / Forwarder"].map(function(t){
     return "<button class='ag-tmpl-btn' data-agtemplate='Aviso a "+t+"'>\u2709 "+agH(t)+"</button>";
   }).join("");
