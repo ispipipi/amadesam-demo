@@ -2527,7 +2527,7 @@ function agSeed(){
 }
 
 const agTipoLabel={HUSBANDRY:"Husbandry",COMERCIAL:"Comercial",TECNICA:"Tecnica (Bunkers)"};
-const agEstadoLabel={TBC:"TBC",COTIZADO:"Cotizado",NOMINADO:"Nominado",EN_PUERTO:"En puerto",SALIDO:"Salido",FACTURADO:"Facturado"};
+const agEstadoLabel={TBC:"TBC",COTIZADO:"Cotizado",NOMINADO:"Nominado",EN_PUERTO:"En puerto",SALIDO:"Salido",FACTURADO:"Facturado",FACTURABLE:"Listo para facturar"};
 
 // ── CSS específico del módulo agencias ──
 function agInjectCss(){
@@ -2555,7 +2555,7 @@ function agInjectCss(){
 .ag-estado-NOMINADO{background:rgba(8,126,164,.25);color:#7FD4DC;}
 .ag-estado-EN_PUERTO{background:rgba(16,185,129,.2);color:#7FDBA6;}
 .ag-estado-SALIDO{background:rgba(245,158,11,.15);color:#E0B25A;}
-.ag-estado-FACTURADO{background:#f59e0b;color:#0f1f2e;font-weight:700;}
+.ag-estado-FACTURADO{background:#f59e0b;color:#0f1f2e;font-weight:700;}.ag-estado-FACTURABLE{background:#e8f4fd;color:#087ea4;font-weight:700;border:1px solid #087ea4;}
 .ag-pill{font-size:11px;letter-spacing:.04em;padding:5px 12px;border:1px solid var(--line);border-radius:20px;background:var(--bg);color:var(--muted);cursor:pointer;font-family:monospace;}
 .ag-pill.active{background:var(--navy);color:white;border-color:var(--navy);}
 .ag-breadcrumb{font-size:11px;color:var(--muted);margin-bottom:10px;letter-spacing:.04em;font-family:monospace;}
@@ -2643,7 +2643,7 @@ function agRenderPizarra(){
 
 // ── REGISTRO ──
 function agRenderRegistro(){
-  var list=agState.expedientes.filter(function(e){return e.estado==="FACTURADO";});
+  var list=agState.expedientes.filter(function(e){return e.estado==="FACTURADO"||e.estado==="FACTURABLE";});
   var rows=list.map(function(e){
     return "<div class='ag-board-row' data-agopen='"+agH(e.num)+"' style='cursor:pointer'>"
       +"<div class='ag-flap-num'>"+agH(e.num)+"</div>"
@@ -3136,10 +3136,7 @@ function agTabCrewing(){
     +"<span style='background:#e7f8f1;color:#10b981;border-radius:5px;padding:5px 12px;font-size:11px;font-family:monospace;font-weight:700'>CONFIRMED</span></div>"
     +"<p style='margin:0;font-size:11px;color:var(--muted);padding-bottom:4px'>Seaman books, passports and crew list required.</p>"
     +"</div>"
-    +"<div style='margin-top:10px;display:flex;gap:8px;flex-wrap:wrap'>"
-    +"<button class='ag-tmpl-btn' data-agtemplate='Immigration Request'>\u2709 Immigration Appointment</button>"
-    +"<button class='ag-tmpl-btn' data-agtemplate='Exit Visa'>\u2709 Exit Visa</button>"
-    +"</div></div>";
+    +"</div>";
 
   // ── CTM — fully in English ──
   var ctm="<div class='ag-group-bar'>CASH TO MASTER (CTM)</div>"
@@ -3485,11 +3482,14 @@ function agOpenModal(kind){
       +"</div>";
   } else if(kind==="ocr-update"){
     inner.innerHTML="<div class='section'><div><h3>Actualizacion via OCR</h3></div><button class='btn' data-agaction='closeModal'>X</button></div>"
-      +"<div class='ag-ocr-drop'><b>Arrastra el correo de actualizacion</b><br>se detectaran cambios de horarios, servicios y nuevos requerimientos</div>"
-      +"<div class='ag-ocr-extract show'>&#x2713; Detectado: ETB actualizado a las 09:30 · nueva linea en Spare Parts · 1 nuevo OFF SIGNER anadido a crewing</div>"
+      +"<div class='ag-ocr-drop'><b>Arrastra el correo de actualizacion</b><br>El OCR detectara cambios de ETA, ETB, muelle, lancha o notas.</div>"
+      +"<div class='ag-ocr-extract show'>&#x2713; Ejemplo detectado: ETB actualizado a las 09:30 · muelle cambiado a Terminal Graneles 1</div>"
+      +"<label style='font-size:12px;display:block;margin-top:10px'>Texto OCR / Email (editable)<textarea id='agOcrUpdateText' rows='5' "
+      +"style='width:100%;margin-top:4px;padding:8px;border:1px solid var(--line);border-radius:5px;font-size:12px;font-family:monospace'>"
+      +"ETA 17/07 08:00\nETB 17/07 09:30\nMUELLE: Terminal Graneles 1\nNOTA: Cambio de ventana confirmado por agente.</textarea></label>"
       +"<div class='toolbar' style='margin-top:14px;justify-content:flex-end'>"
       +"<button class='btn' data-agaction='closeModal'>Cancelar</button>"
-      +"<button class='btn primary' data-agaction='closeApplyOcr'>Aplicar al expediente</button>"
+      +"<button class='btn primary' data-agaction='closeApplyOcr'>Aplicar cambios al expediente</button>"
       +"</div>";
   } else if(kind==="add-cliente"){
     inner.innerHTML="<div class='section'><div><h3>Anadir entidad cliente</h3></div><button class='btn' data-agaction='closeModal'>X</button></div>"
@@ -3505,9 +3505,11 @@ function agOpenModal(kind){
 function agCloseModal(){
   var m=ag$('#agModalBg');if(m)m.classList.remove('open');
 }
+var agProcessing=false;
 function agConfirmAlta(){
+  if(agProcessing)return;agProcessing=true;
   var buque=(ag$('#agFBuque')||{}).value||"";
-  if(!buque.trim()){toast("Indica el nombre del buque");return;}
+  if(!buque.trim()){agProcessing=false;toast("Indica el nombre del buque");return;}
   var n=agState.expedientes.filter(function(e){return!e.tbc;}).length+1;
   var num="HUE-26-0"+n;
   agState.expedientes.unshift({
@@ -3518,9 +3520,10 @@ function agConfirmAlta(){
     muelle:"Por asignar",obs:"Dado de alta via OCR",
     estado:"COTIZADO",cliente:(ag$('#agFCliente')||{}).value||"",clientesExtra:[]
   });
-  agSave();agCloseModal();agGoto("pizarra");toast("Expediente "+num+" creado.");
+  agSave();agCloseModal();agGoto("pizarra");toast("Expediente "+num+" creado.");setTimeout(function(){agProcessing=false;},500);
 }
 function agConfirmPda(){
+  if(agProcessing)return;agProcessing=true;
   var buque=(ag$('#agFBuque2')||{}).value||"";
   var n=agState.expedientes.filter(function(e){return e.tbc;}).length+1;
   var num="TBC-0"+n;
@@ -3531,7 +3534,7 @@ function agConfirmPda(){
     muelle:"Por confirmar",obs:(ag$('#agFServ')||{}).value||"PDA enviada, pdte. confirmacion",
     estado:"TBC",cliente:(ag$('#agFCliente2')||{}).value||"",clientesExtra:[]
   });
-  agSave();agCloseModal();agGoto("pizarra");toast("Expediente TBC creado.");
+  agSave();agCloseModal();agGoto("pizarra");toast("Expediente TBC creado.");setTimeout(function(){agProcessing=false;},500);
 }
 function agConfirmAddCliente(){
   var nombre=(ag$('#agFCliNombre')||{}).value||"";
@@ -3545,8 +3548,8 @@ function agConfirmAddCliente(){
 function agMarcarFacturado(){
   if(agState.openExp){
     var e=agState.expedientes.find(function(x){return x.num===agState.openExp;});
-    if(e){e.estado="FACTURADO";}
-    agSave();agGoto("registro");toast("Expediente marcado como Facturado y movido a Registro.");
+    if(e){e.estado="FACTURABLE";}
+    agSave();agGoto("registro");toast("Expediente listo para facturar. Movido a Registro.");
   }
 }
 
@@ -3645,6 +3648,7 @@ function renderAgencias(){
   if(agViewEl){
     agViewEl.onclick=null;
     agViewEl.addEventListener('click',function(ev){
+      ev.stopPropagation&&ev.stopPropagation();
       var el=ev.target.closest('[data-agopen]');
       if(el){agOpenExp(el.dataset.agopen);return;}
       el=ev.target.closest('[data-agfilter]');
@@ -3666,7 +3670,26 @@ function renderAgencias(){
         else if(act==='confirmAddCliente')agConfirmAddCliente();
         else if(act==='marcarFacturado')agMarcarFacturado();
         else if(act==='showOcrExtract'){var x=ag$('#agOcrExtract');if(x)x.classList.add('show');}
-        else if(act==='closeApplyOcr'){agCloseModal();toast('Actualizacion aplicada al expediente.');}
+        else if(act==='closeApplyOcr'){
+          var ocrTxt=ag$('#agOcrUpdateText');
+          var txt=ocrTxt?ocrTxt.value:'';
+          if(agState.openExp&&txt){
+            var e=agState.expedientes.find(function(x){return x.num===agState.openExp;});
+            if(e){
+              // Parse basic fields from OCR text
+              var etaM=txt.match(/ETA[:\s]+([\d\/: ]+)/i);
+              var etbM=txt.match(/ETB[:\s]+([\d\/: ]+)/i);
+              var muelleM=txt.match(/(?:MUELLE|BERTH|TERMINAL)[:\s]+([^\n]+)/i);
+              var obsM=txt.match(/(?:NOTA|NOTE|OBS)[:\s]+([^\n]+)/i);
+              if(etaM)e.eta=etaM[1].trim();
+              if(etbM)e.etb=etbM[1].trim();
+              if(muelleM)e.muelle=muelleM[1].trim();
+              if(obsM)e.obs=obsM[1].trim();
+              agSave();
+            }
+          }
+          agCloseModal();renderAgencias();toast('Actualizacion aplicada al expediente.');
+        }
         else if(act==='closeAndSend'){var n=el.dataset.agname||'';agCloseModal();toast('"'+n+'" enviado via Outlook.');}
         else if(act==='editCard'){agOpenCardModal(el.dataset.agcardtype,el.dataset.agcardid);}
         else if(act==='newCard'){agOpenCardModal(el.dataset.agcardtype,'');}
