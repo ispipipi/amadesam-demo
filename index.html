@@ -2590,7 +2590,18 @@ function agInjectCss(){
 
 // ── Helpers ──
 function agChk(label,done){
-  return "<div class='ag-chk "+(done?"done":"")+"'><div class='box'>"+(done?"✓":"")+"</div><span>"+agH(label)+"</span></div>";
+  return "<div class='ag-chk "+(done?"done":"")+"'"
+    +" onclick='agToggleChk(this)' style='cursor:pointer' data-chk-done='"+(done?"1":"")+"'"
+    +"><div class='box'>"+(done?"\u2713":"")+"</div>"
+    +"<span>"+agH(label)+"</span></div>";
+}
+function agToggleChk(el){
+  var done=el.dataset.chkDone==="1";
+  var newDone=!done;
+  el.dataset.chkDone=newDone?"1":"";
+  el.classList.toggle("done",newDone);
+  var box=el.querySelector(".box");
+  if(box)box.textContent=newDone?"✓":"";
 }
 function agTipoTag(tipo){
   return "<span class='ag-tipo ag-tipo-"+agH(tipo)+"'>"+agH(agTipoLabel[tipo]||tipo)+"</span>";
@@ -3543,13 +3554,15 @@ function agConfirmPda(){
   agSave();agCloseModal();agGoto("pizarra");toast("Expediente TBC creado.");setTimeout(function(){agProcessing=false;},500);
 }
 function agConfirmAddCliente(){
+  if(agProcessing)return;agProcessing=true;
   var nombre=(ag$('#agFCliNombre')||{}).value||"";
-  if(!nombre.trim()){toast("Indica el nombre de la entidad");return;}
+  if(!nombre.trim()){agProcessing=false;toast("Indica el nombre de la entidad");return;}
   if(agState.openExp){
     var e=agState.expedientes.find(function(x){return x.num===agState.openExp;});
     if(e){e.clientesExtra=e.clientesExtra||[];e.clientesExtra.push({nombre:nombre.trim(),rol:(ag$('#agFCliRol')||{}).value||"Otro"});}
   }
-  agSave();agCloseModal();renderAgencias();toast("Entidad anadida al expediente.");
+  agSave();agCloseModal();renderAgencias();toast("Entidad añadida al expediente.");
+  setTimeout(function(){agProcessing=false;},500);
 }
 function agMarcarFacturado(){
   if(agState.openExp){
@@ -3697,6 +3710,7 @@ function renderAgencias(){
           agCloseModal();renderAgencias();toast('Actualizacion aplicada al expediente.');
         }
         else if(act==='closeAndSend'){var n=el.dataset.agname||'';agCloseModal();toast('"'+n+'" enviado via Outlook.');}
+        else if(act==='confirmDelete'){agConfirmDelete(el.dataset.agdeltype,el.dataset.agdelid);}
         else if(act==='editCard'){agOpenCardModal(el.dataset.agcardtype,el.dataset.agcardid);}
         else if(act==='newCard'){agOpenCardModal(el.dataset.agcardtype,'');}
         else if(act==='deleteCard'){agDeleteCard(el.dataset.agcardtype,el.dataset.agcardid);}
