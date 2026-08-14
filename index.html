@@ -2595,6 +2595,21 @@ function agChk(label,done){
     +"><div class='box'>"+(done?"\u2713":"")+"</div>"
     +"<span>"+agH(label)+"</span></div>";
 }
+function agCycleT1(el){
+  var states=["ok","pending","na"];
+  var labels={ok:"✓ OK",pending:"Pending",na:"N/A"};
+  var styles={
+    ok:"background:#e7f8f1;color:#10b981;font-weight:700;border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;cursor:pointer",
+    pending:"background:#fff7e8;color:#f59e0b;border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;cursor:pointer",
+    na:"background:#f4f8fa;color:#94a3b8;border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;cursor:pointer"
+  };
+  var cur=el.dataset.t1State||"pending";
+  var next=states[(states.indexOf(cur)+1)%states.length];
+  el.dataset.t1State=next;
+  el.textContent=labels[next];
+  el.style.cssText=styles[next];
+  el.setAttribute("title","Click to toggle: OK → Pending → N/A");
+}
 function agToggleChk(el){
   var done=el.dataset.chkDone==="1";
   var newDone=!done;
@@ -3186,13 +3201,17 @@ function agTabLogistics(){
   var th="style='padding:7px 8px;white-space:nowrap;font-size:10px'";
   var td="style='padding:6px 8px;font-size:11px'";
 
-  // ── T1 helper: 3 states — green / pending / N/A ──
+  // ── T1 helper: 3 states — green / pending / N/A — clickable to cycle ──
   function t1Cell(state){
-    if(state==='ok')
-      return "<span style='background:#e7f8f1;color:#10b981;border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;font-weight:700;cursor:pointer' title='T1 OK'>\u2713 OK</span>";
-    if(state==='na')
-      return "<span style='background:#f4f8fa;color:#94a3b8;border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;cursor:pointer' title='Not applicable'>N/A</span>";
-    return "<span style='background:#fff7e8;color:#f59e0b;border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;cursor:pointer' title='Pending'>Pending</span>";
+    var styles={
+      ok:"background:#e7f8f1;color:#10b981;font-weight:700",
+      pending:"background:#fff7e8;color:#f59e0b",
+      na:"background:#f4f8fa;color:#94a3b8"
+    };
+    var labels={ok:"\u2713 OK",pending:"Pending",na:"N/A"};
+    var s=state||'pending';
+    return "<span style='"+styles[s]+";border-radius:4px;padding:2px 8px;font-size:10px;font-family:monospace;cursor:pointer' "
+      +"onclick='agCycleT1(this)' data-t1-state='"+s+"' title='Click to toggle: OK \u2192 Pending \u2192 N/A'>"+labels[s]+"</span>";
   }
 
   // ── SPARE PARTS ──
