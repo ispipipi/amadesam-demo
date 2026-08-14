@@ -3239,7 +3239,7 @@ function agTabLogistics(){
     +"<td>38 kg</td>"
     +"<td>Rotterdam</td>"
     +"<td class='ag-done-cell'>\u2713</td>"
-    +"<td style='padding:6px 8px;color:var(--muted);font-size:11px'>\u2014</td>"
+    +"<td style='padding:6px 8px'><input placeholder='e.g. SVQ 13/07' style='width:100px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11px;font-family:monospace'></td>"
     +("<td style='padding:6px 8px'>"+t1Cell('ok')+"</td>")
     +"<td style='padding:6px 8px;font-size:11px'>31/12/2026</td>"
     +"<td class='ag-done-cell'>\u2713 Received</td>"
@@ -3269,7 +3269,7 @@ function agTabLogistics(){
     +"<td>310 kg</td>"
     +"<td>Huelva</td>"
     +"<td class='ag-done-cell'>\u2713</td>"
-    +"<td style='padding:6px 8px;color:var(--muted);font-size:11px'>\u2014</td>"
+    +"<td style='padding:6px 8px'><input placeholder='e.g. SVQ 13/07' style='width:100px;padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11px;font-family:monospace'></td>"
     +("<td style='padding:6px 8px'>"+t1Cell('na')+"</td>")
     +"<td style='padding:6px 8px;color:var(--muted);font-size:11px'>\u2014</td>"
     +"<td class='ag-done-cell'>\u2713 Received</td>"
@@ -3686,6 +3686,7 @@ function renderAgencias(){
   if(agViewEl){
     agViewEl.onclick=null;
     agViewEl.addEventListener('click',function(ev){
+      if(ev.target.tagName==='INPUT'||ev.target.tagName==='SELECT'||ev.target.tagName==='TEXTAREA')return;
       var el=ev.target.closest('[data-agopen]');
       if(el){agOpenExp(el.dataset.agopen);return;}
       el=ev.target.closest('[data-agfilter]');
